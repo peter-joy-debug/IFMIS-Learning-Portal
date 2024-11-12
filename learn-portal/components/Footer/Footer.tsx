@@ -28,7 +28,7 @@ export function Footer() {
   return (
     <Container className={classes.footer} fluid>
       <div className={classes.inner}>
-        <h2>Umsebe - </h2>
+      <h2>Umsebe - <span style={{fontSize:'15px', fontWeight:'lighter'}}> Support Portal</span></h2>
 
         <Group className={classes.links} style={{marginLeft:'15%'}}>
         {items}

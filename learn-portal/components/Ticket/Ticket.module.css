@@ -64,7 +64,7 @@
     display: flex;
     justify-content: center;
   
-    @media (max-width: $mantine-breakpoint-xs) {
+    @media (max-width: 450px) {
       flex-direction: column;
     }
   }
@@ -74,8 +74,8 @@
       margin-left: var(--mantine-spacing-md);
     }
   
-    @media (max-width: $mantine-breakpoint-xs) {
-      height: rem(42px);
+    @media (max-width: 450px) {
+      height: 42px;
       font-size: var(--mantine-font-size-md);
   
       &:not(:first-of-type) {

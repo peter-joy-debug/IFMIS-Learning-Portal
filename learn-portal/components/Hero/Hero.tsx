@@ -9,7 +9,7 @@ export function Hero() {
       <div className={classes.inner}>
         <div className={classes.content}>
           <Title className={classes.title}>
-            A <span className={classes.highlight}>modern</span> React <br /> components library
+            Learn<span className={classes.highlight}>Umsebe</span> System <br /> With Us Today
           </Title>
           <Text c="dimmed" mt="md">
           Welcome to our IFMIS Support Portal! Here, you can access learning content, Frequently Asked Questions (FAQ), and submit tickets for any issues or inquiries. 
