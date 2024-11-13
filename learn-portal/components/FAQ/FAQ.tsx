@@ -13,10 +13,10 @@ export function FAQ() {
         <Text>FAQs Section</Text>
         <br />
         <Grid id="faq-grid" gutter={50}>
-          <Grid.Col span={{ base: 12, md: 5 }}>
+          <Grid.Col span={{ base: 12, md: 4 }}>
             <Image style={{borderTopLeftRadius:'100px',borderBottomRightRadius:'100px'}} src='https://plus.unsplash.com/premium_photo-1678216285963-253d94232eb7?q=80&w=2500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' alt="Frequently Asked Questions" />
           </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 7 }}>
+          <Grid.Col span={{ base: 12, md: 8 }}>
             <Paper style={{padding:'5%'}} shadow='lg'>
             <Title order={2} ta="left" className={classes.title}>
               Frequently Asked Questions
