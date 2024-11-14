@@ -9,9 +9,11 @@ import {
   MRT_GlobalFilterTextInput,
   MRT_ToggleFiltersButton,
 } from 'mantine-react-table';
-import { Box, Button, Flex, Menu, Text, Title } from '@mantine/core';
-import { IconUserCircle, IconSend } from '@tabler/icons-react';
+import { Box, Button, Flex, Menu, Text, Title, Paper,Container, Grid, Drawer, Spoiler, Group, Avatar, ActionIcon } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IconUserCircle, IconSend, IconArrowsMaximize } from '@tabler/icons-react';
 import { data } from './makeData';
+
 
 export type Employee = {
   firstName: string;
@@ -24,6 +26,7 @@ export type Employee = {
 };
 
 const AllTickets = () => {
+    const [opened, { open, close }] = useDisclosure(false);
   const columns = useMemo<MRT_ColumnDef<Employee>[]>(
     () => [
       {
@@ -66,50 +69,10 @@ const AllTickets = () => {
         id: 'id',
         header: ' ',
         columns: [
-        //   {
-        //     accessorKey: 'salary',
-        //     header: 'Salary',
-        //     size: 200,
-        //     filterVariant: 'range-slider',
-        //     mantineFilterRangeSliderProps: {
-        //       color: 'indigo',
-        //       label: (value) =>
-        //         value?.toLocaleString?.('en-US', {
-        //           style: 'currency',
-        //           currency: 'USD',
-        //           minimumFractionDigits: 0,
-        //           maximumFractionDigits: 0,
-        //         }),
-        //     },
-        //     //custom conditional format and styling
-        //     Cell: ({ cell }) => (
-        //       <Box
-        //         style={(theme) => ({
-        //           backgroundColor:
-        //             cell.getValue<number>() < 50_000
-        //               ? theme.colors.red[9]
-        //               : cell.getValue<number>() >= 50_000 &&
-        //                   cell.getValue<number>() < 75_000
-        //                 ? theme.colors.yellow[9]
-        //                 : theme.colors.green[9],
-        //           borderRadius: '4px',
-        //           color: '#fff',
-        //           maxWidth: '9ch',
-        //           padding: '4px',
-        //         })}
-        //       >
-        //         {cell.getValue<number>()?.toLocaleString?.('en-US', {
-        //           style: 'currency',
-        //           currency: 'USD',
-        //           minimumFractionDigits: 0,
-        //           maximumFractionDigits: 0,
-        //         })}
-        //       </Box>
-        //     ),
-        //   },
+
           {
             accessorKey: 'jobTitle', //hey a simple column for once
-            header: 'Job Title',
+            header: 'Status',
             filterVariant: 'multi-select',
             // size: 350,
           },
@@ -121,7 +84,7 @@ const AllTickets = () => {
               return sDay;
             },
             id: 'startDate',
-            header: 'Start Date',
+            header: 'Date',
             filterVariant: 'date-range',
             sortingFn: 'datetime',
             enableColumnFilterModes: false, //keep this as only date-range filter with between inclusive filterFn
@@ -162,26 +125,54 @@ const AllTickets = () => {
       placeholder: 'Search Employees',
     },
     renderDetailPanel: ({ row }) => (
-      <Box
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          gap: '16px',
-          padding: '16px',
-        }}
-      >
-        <img
-          alt="avatar"
-          height={200}
-          src={row.original.avatar}
-          style={{ borderRadius: '50%' }}
-        />
-        <Box style={{ textAlign: 'center' }}>
-          <Title>Signature Catch Phrase:</Title>
-          <Text>&quot;{row.original.signatureCatchPhrase}&quot;</Text>
-        </Box>
-      </Box>
+        <Container size='lg'>
+            <Grid>
+            <Grid.Col span={{ base: 12, xs: 8 }}>
+
+            <Box style={{ textAlign: 'justify', padding:'3% 5%'  }}>
+            <Text style={{marginBottom:'2%'}} size='20px' fw={560}>Our responsibility center</Text>
+            <Text>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Laboriosam, saepe obcaecati. Explicabo porro ipsa itaque, deleniti rerum quae totam maxime repellendus quasi vitae ipsum, molestiae doloribus ducimus, incidunt dolorum ex? Ratione a repellat quam praesentium harum, libero quibusdam! Ad fuga ut expedita beatae? Esse error sint nisi maxime, fugiat corrupti placeat debitis ducimus tenetur beatae. Dignissimos numquam ratione reprehenderit nostrum libero, debitis, quidem eos soluta minima voluptatem culpa distinctio optio omnis repudiandae accusamus nulla voluptas temporibus officiis. Nobis eum molestiae voluptatem recusandae ducimus, fuga a debitis voluptatibus maxime ut sint non blanditiis quas dolorum quibusdam numquam asperiores reiciendis perferendis? Recusandae!</Text>
+            </Box>
+
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, xs: 4 }}>
+
+            <Box style={{ textAlign: 'justify', padding:'3% 5%', backgroundColor:'rgba(0,0,0,0.01)', border:'1px solid lightblue' }}>
+
+            <Drawer opened={opened} onClose={close} title="Details" position="right">
+                {/* Drawer content */}
+            </Drawer>
+
+            <Button onClick={open} variant='filled'>Reply Ticket</Button>
+            <br />
+            <br />
+
+            <Paper shadow='xl' style={{padding:'5%', marginBottom:'7%'}} radius='md'>
+            <Group>
+            <Avatar radius="xl" />
+            <Text c='dimmed'>Peter Joy</Text>
+            </Group>
+            <Text>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod eos tempore minima obcaecati molestiae. Illo animi saepe nesciunt autem explicabo!
+            </Text>
+            <Group>
+            <ActionIcon variant="outline" aria-label="Settings" color='teal' onClick={open}>
+            <IconArrowsMaximize style={{ width: '70%', height: '70%' }} stroke={1.5} />
+            </ActionIcon>
+            <Text c='dimmed' style={{fontSize:'12px'}}>Posted on: 12/11/2024</Text>
+            </Group>
+
+
+            </Paper>
+
+            </Box>
+
+            </Grid.Col>
+            </Grid>
+
+
+        </Container>
+
     ),
     renderRowActionMenuItems: () => (
       <>
@@ -215,31 +206,10 @@ const AllTickets = () => {
             <MRT_GlobalFilterTextInput table={table} />
             <MRT_ToggleFiltersButton table={table} />
           </Flex>
-          <Flex style={{ gap: '8px' }}>
-            <Button
-              color="red"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleDeactivate}
-              variant="filled"
-            >
-              Deactivate
-            </Button>
-            <Button
-              color="green"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleActivate}
-              variant="filled"
-            >
-              Activate
-            </Button>
-            <Button
-              color="blue"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleContact}
-              variant="filled"
-            >
-              Contact
-            </Button>
+          <Flex style={{ gap: '5px' }}>
+            <Text style={{textAlign:'center'}} fw={500}>
+                View Tickets 
+            </Text>
           </Flex>
         </Flex>
       );

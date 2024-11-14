@@ -217,30 +217,9 @@ const Example = () => {
             <MRT_ToggleFiltersButton table={table} />
           </Flex>
           <Flex style={{ gap: '8px' }}>
-            <Button
-              color="red"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleDeactivate}
-              variant="filled"
-            >
-              Deactivate
-            </Button>
-            <Button
-              color="green"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleActivate}
-              variant="filled"
-            >
-              Activate
-            </Button>
-            <Button
-              color="blue"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleContact}
-              variant="filled"
-            >
-              Contact
-            </Button>
+            <Text>
+                View Tickets 
+            </Text>
           </Flex>
         </Flex>
       );
