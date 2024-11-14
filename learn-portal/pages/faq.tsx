@@ -1,4 +1,3 @@
-
 import { Welcome } from '../components/Welcome/Welcome';
 import { HeaderNavbar } from '@/components/Navbar/HeaderNavbar';
 import { Hero } from '@/components/Hero/Hero';
