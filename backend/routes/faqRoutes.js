@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 
 // FAQ Routes
 router.post('/create', auth, faqController.createFAQ);
-router.get('/', auth, faqController.getFAQs);
+router.get('/',faqController.getFAQs);
 router.put('/update', auth, faqController.updateFAQ);
 router.delete('/delete', auth, faqController.deleteFAQ);
 
