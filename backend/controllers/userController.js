@@ -299,3 +299,140 @@ exports.login = async (req, res) => {
   exports.logout = (req, res) => {
     res.status(501).json({ message: 'Logout not implemented' });
   };
+
+
+
+
+
+
+
+// // Get all registered users
+// exports.getAllUsers = async (req, res) => {
+//     try {
+//         console.log("GET ALL USERS");
+        
+//       const users = await prisma.sec_system_user.findMany({
+//         select: {
+//           id: true,
+//           first_name: true,
+//           last_name: true,
+//           email_address: true,
+//           user_id: true,
+//           position: true,
+//           status: true,
+//         },
+//       });
+  
+//       res.status(200).json({
+//         message: 'Users retrieved successfully',
+//         users,
+//       });
+//     } catch (err) {
+//       res.status(500).json({
+//         message: 'Failed to retrieve users',
+//         error: err.message,
+//       });
+//     }
+//   };
+  
+//   // Get a user by ID
+//   exports.getUserById = async (req, res) => {
+//     console.log("SINGLE ID");
+//     const { id } = req.params;
+  
+//     if (!id) {
+//       return res.status(400).json({ message: 'User ID is required' });
+//     }
+  
+//     try {
+//       const user = await prisma.sec_system_user.findUnique({
+//         where: { id },
+//         select: {
+//           id: true,
+//           first_name: true,
+//           last_name: true,
+//           email_address: true,
+//           user_id: true,
+//           position: true,
+//           status: true,
+//         },
+//       });
+  
+//       if (!user) {
+//         return res.status(404).json({ message: 'User not found' });
+//       }
+  
+//       res.status(200).json({
+//         message: 'User retrieved successfully',
+//         user,
+//       });
+//     } catch (err) {
+//       res.status(500).json({
+//         message: 'Failed to retrieve user',
+//         error: err.message,
+//       });
+//     }
+//   };
+  
+
+exports.getAllUsers = async (req, res) => {
+    try {
+      const users = await prisma.sec_system_user.findMany({
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email_address: true,
+          user_id: true,
+          position: true,
+          status: true,
+        },
+      });
+  
+      res.status(200).json({
+        message: 'Users retrieved successfully',
+        users,
+      });
+    } catch (err) {
+      res.status(400).json({
+        message: 'Failed to retrieve users',
+        error: err.message,
+      });
+    }
+  };
+  
+
+
+  exports.getUserById = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const user = await prisma.sec_system_user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email_address: true,
+          user_id: true,
+          position: true,
+          status: true,
+        },
+      });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json({
+        message: 'User retrieved successfully',
+        user,
+      });
+    } catch (err) {
+      res.status(400).json({
+        message: 'Failed to retrieve user',
+        error: err.message,
+      });
+    }
+  };
+  

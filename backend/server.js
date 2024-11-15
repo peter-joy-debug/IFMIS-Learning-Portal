@@ -25,6 +25,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/faqs', faqRoutes);
 
+app.use((req, res) => {
+    res.status(404).send('Not Found');
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
