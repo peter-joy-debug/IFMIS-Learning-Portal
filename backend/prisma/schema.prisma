@@ -1,0 +1,2361 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["public", "user_schema_uts", "uts"]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ana_data_attribute {
+  id                    String  @id @db.Uuid
+  state                 Int
+  version               BigInt
+  attribute_description String  @db.VarChar(255)
+  attribute_name        String  @db.VarChar(255)
+  attribute_role        String  @db.VarChar(255)
+  context               String  @db.VarChar(255)
+  data_type             String  @db.VarChar(255)
+  comments              String? @db.VarChar
+
+  @@unique([attribute_name, context], map: "ana_data_attribute_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ast_equipment_owner {
+  id                      String                    @id(map: "ast_equipment_owner_pk") @db.Uuid
+  state                   Int
+  version                 BigInt
+  code                    String                    @db.VarChar(10)
+  name                    String                    @unique(map: "ast_equipment_owner_uk1") @db.VarChar(50)
+  description             String?                   @db.VarChar(250)
+  comments                String?
+  ast_transport_equipment ast_transport_equipment[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ast_fuel_type {
+  id                      String                    @id(map: "ast_fuel_type_pk") @db.Uuid
+  state                   Int
+  version                 BigInt
+  type                    String                    @db.VarChar(250)
+  fiscal_year_id          String?                   @db.Uuid
+  rate                    Float
+  comments                String?
+  config_period           config_period?            @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_fuel_type_fk1")
+  ast_transport_equipment ast_transport_equipment[]
+
+  @@unique([fiscal_year_id, type], map: "ast_fuel_type_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ast_transport_brand {
+  id                      String                    @id(map: "ast_transport_brand_pk") @db.Uuid
+  state                   Int
+  version                 BigInt
+  code                    String                    @db.VarChar(10)
+  name                    String                    @unique(map: "ast_transport_brand_uk2") @db.VarChar(50)
+  description             String?                   @db.VarChar(250)
+  equipment_type          String?                   @db.VarChar(50)
+  comments                String?
+  ast_transport_equipment ast_transport_equipment[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ast_transport_dealer {
+  id                      String                    @id(map: "ast_transport_dealer_pk") @db.Uuid
+  state                   Int
+  version                 BigInt
+  code                    String                    @db.VarChar(10)
+  name                    String                    @unique(map: "ast_transport_dealer_uk1") @db.VarChar(50)
+  description             String?                   @db.VarChar(250)
+  comments                String?
+  ast_transport_equipment ast_transport_equipment[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ast_transport_equipment {
+  id                         String                @id(map: "ast_other_transport_equipment_pk") @db.Uuid
+  state                      Int
+  version                    BigInt
+  acquisition_date           DateTime?             @db.Date
+  acquisition_mode           String                @db.VarChar(50)
+  asset_number               String                @unique(map: "ast_transport_equipment_uk_01") @db.VarChar(100)
+  asset_status               String                @db.VarChar(50)
+  asset_type                 String                @db.VarChar(50)
+  controlling_cost_center_id String                @db.Uuid
+  current_value              Decimal               @db.Decimal(20, 0)
+  description                String                @db.VarChar(1024)
+  fiscal_year_id             String                @db.Uuid
+  initial_value              Decimal               @db.Decimal(20, 0)
+  chasis_number              String                @db.VarChar(50)
+  manufacturing_year         Int
+  fuel_type                  String                @db.VarChar(50)
+  useful_life                Int?
+  asset_condition            String?               @db.VarChar(20)
+  comment                    String?               @db.VarChar(1000)
+  valuation_method           String?               @db.VarChar(50)
+  transport_type             String?               @db.VarChar(50)
+  remaining_useful_life      Int?
+  registration_number        String                @unique(map: "ast_transport_equipment_uk_02") @db.VarChar(50)
+  equipment_type             String?               @db.VarChar(50)
+  engine_type                String?               @db.VarChar(50)
+  model                      String                @db.VarChar(255)
+  serial_number              String                @db.VarChar(100)
+  engine_number              String                @db.VarChar(100)
+  engine_capacity            Int
+  color                      String                @db.VarChar(100)
+  owner_id                   String                @db.Uuid
+  dealer_id                  String?               @db.Uuid
+  brand_id                   String                @db.Uuid
+  mileage                    Int
+  vehicle_type_id            String?               @db.Uuid
+  comments                   String?
+  hire_charge_amount         Decimal               @default(0.0) @db.Decimal(20, 0)
+  replacement_value          Decimal               @default(0.0) @db.Decimal(20, 0)
+  veh_type_code              String?               @db.VarChar(5)
+  fuel_type_id               String?               @db.Uuid
+  ast_transport_dealer       ast_transport_dealer? @relation(fields: [dealer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_transport_equipment_fk_1")
+  ast_equipment_owner        ast_equipment_owner   @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_transport_equipment_fk_2")
+  coa_administrative         coa_administrative    @relation(fields: [controlling_cost_center_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_transport_equipment_fk_3")
+  ast_fuel_type              ast_fuel_type?        @relation(fields: [fuel_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_transport_equipment_fk_4")
+  ast_transport_brand        ast_transport_brand   @relation(fields: [brand_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_transport_equipment_fk_5")
+  ast_vehicle_type           ast_vehicle_type?     @relation(fields: [vehicle_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_transport_equipment_fk_6")
+  config_period              config_period         @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_transport_equipment_fk_8")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ast_vehicle_budget_component {
+  id                 String              @id(map: "hr_vehicle_budget_component_pkey") @db.Uuid
+  state              Int
+  version            BigInt
+  code               String              @unique(map: "hr_vehicle_budget_component_uk1") @db.VarChar(50)
+  name               String              @unique(map: "hr_vehicle_budget_component_uk2") @db.VarChar(255)
+  description        String?             @db.VarChar(250)
+  budget_type        String              @db.VarChar(20)
+  economic_id        String              @db.Uuid
+  comments           String?
+  fuel_type          String?             @db.VarChar(50)
+  responsible_rc_id  String?             @db.Uuid
+  coa_economic       coa_economic        @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_vehicle_budget_component_fk1")
+  coa_administrative coa_administrative? @relation(fields: [responsible_rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ast_vehicle_budget_component_fk2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ast_vehicle_type {
+  id                      String                    @id(map: "ast_vehicle_type_pk") @db.Uuid
+  state                   Int
+  version                 BigInt
+  code                    String                    @db.VarChar(10)
+  name                    String                    @unique(map: "ast_vehicle_type_uk1") @db.VarChar(50)
+  description             String?                   @db.VarChar(250)
+  comments                String?
+  previous_daily_rate     Float                     @default(0.0)
+  daily_rate              Float                     @default(0.0)
+  free_daily_kms          Float                     @default(0.0)
+  km_charge               Float                     @default(0.0)
+  previous_km_charge      Float                     @default(0.0)
+  maintanance_rate        Float                     @default(0.0)
+  long_term_hire_rate     Float                     @default(0.0)
+  consumption_rate        Float                     @default(0.0)
+  ast_transport_equipment ast_transport_equipment[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_activity {
+  id                 String              @id(map: "budg_activity_pk") @db.Uuid
+  state              Int
+  version            BigInt
+  code               String              @unique(map: "budg_activity_uk_1") @db.VarChar(255)
+  name               String              @db.VarChar(255)
+  program_id         String?             @db.Uuid
+  budget_sheet_id    String?             @db.Uuid
+  fiscal_year_id     String              @db.Uuid
+  rc_id              String?             @db.Uuid
+  parent_id          String?             @db.Uuid
+  description        String?             @db.VarChar(500)
+  comments           String?
+  category           String?
+  funder_id          String?             @db.Uuid
+  budg_budget_sheet  budg_budget_sheet?  @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_activity_fk_1")
+  config_period      config_period       @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_activity_fk_2")
+  coa_program        coa_program?        @relation(fields: [program_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_activity_fk_3")
+  coa_administrative coa_administrative? @relation(fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_activity_fk_5")
+  budg_budget_input  budg_budget_input[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_administrative_budget_ceiling {
+  id                                                                                      String                     @id(map: "budg_administrative_budget_ceiling_pk") @db.Uuid
+  state                                                                                   Int
+  version                                                                                 BigInt
+  budget_m3                                                                               Decimal                    @db.Decimal
+  budget_m2                                                                               Decimal                    @db.Decimal
+  budget_m1                                                                               Decimal                    @db.Decimal
+  budget                                                                                  Decimal                    @db.Decimal
+  proj_out_turn                                                                           Decimal                    @db.Decimal
+  budget_p1                                                                               Decimal                    @db.Decimal
+  budget_p2                                                                               Decimal                    @db.Decimal
+  budget_p3                                                                               Decimal                    @db.Decimal
+  budget_sheet_id                                                                         String                     @db.Uuid
+  fiscal_year_id                                                                          String                     @db.Uuid
+  administrative_id                                                                       String                     @db.Uuid
+  level                                                                                   String                     @db.VarChar(255)
+  prel_out_turn                                                                           Decimal                    @default(0) @db.Decimal
+  mid_year                                                                                Decimal                    @default(0) @db.Decimal
+  locked                                                                                  Boolean                    @default(false)
+  comments                                                                                String?
+  ceiling_category_type                                                                   String?                    @db.VarChar(100)
+  bc_sheet_id                                                                             String?                    @db.Uuid
+  budg_budget_sheet_budg_administrative_budget_ceiling_budget_sheet_idTobudg_budget_sheet budg_budget_sheet          @relation("budg_administrative_budget_ceiling_budget_sheet_idTobudg_budget_sheet", fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_administrative_budget_ceiling_budg_budget_sheet_fk_1")
+  budg_budget_sheet_budg_administrative_budget_ceiling_bc_sheet_idTobudg_budget_sheet     budg_budget_sheet?         @relation("budg_administrative_budget_ceiling_bc_sheet_idTobudg_budget_sheet", fields: [bc_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_administrative_budget_ceiling_budg_budget_sheet_fk_2")
+  config_period                                                                           config_period              @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_administrative_budget_ceiling_fk_3")
+  coa_administrative                                                                      coa_administrative         @relation(fields: [administrative_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_administrative_budget_ceiling_fk_4")
+  budg_budget_ceiling_item                                                                budg_budget_ceiling_item[]
+
+  @@unique([budget_sheet_id, administrative_id, ceiling_category_type], map: "budg_administrative_budget_ceiling_uk_1")
+  @@index([fiscal_year_id], map: "budg_administrative_budget_ceiling_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_assumption {
+  id                  String               @id(map: "budg_assumption_pk") @db.Uuid
+  state               Int
+  version             BigInt
+  reference_number    String               @unique(map: "budg_assumption_uk_1") @db.VarChar(255)
+  content             String
+  budget_sheet_id     String?              @db.Uuid
+  fiscal_year_id      String               @db.Uuid
+  comments            String?
+  header_id           String?              @db.Uuid
+  budg_budget_sheet   budg_budget_sheet?   @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_assumption_fk_1")
+  config_period       config_period        @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_assumption_fk_2")
+  config_group_header config_group_header? @relation(fields: [header_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_assumption_fk_3")
+
+  @@index([fiscal_year_id], map: "budg_assumption_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_bfp_currency_rate {
+  id              String           @id(map: "budg_bfp_currency_rate_pk") @db.Uuid
+  rate            Decimal          @db.Decimal(19, 2)
+  currency_id     String?          @db.Uuid
+  fiscal_year_id  String           @db.Uuid
+  comments        String?
+  state           Int?
+  version         BigInt?
+  config_currency config_currency? @relation(fields: [currency_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_bfp_currency_rate_fk_1")
+  config_period   config_period    @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_bfp_currency_rate_fk_2")
+
+  @@unique([currency_id, fiscal_year_id], map: "budg_bfp_currency_rate_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_brief {
+  id                String             @id(map: "budg_budget_brief_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  content           String
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  comments          String?
+  administrative_id String             @db.Uuid
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_brief_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_brief_fk_2")
+
+  @@unique([budget_sheet_id, fiscal_year_id, administrative_id], map: "budg_budget_brief_uk_1")
+  @@index([fiscal_year_id], map: "budg_budget_brief_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_call_circular {
+  id                String             @id(map: "budg_bcc_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  reference_number  String             @db.VarChar(255)
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  document_id       String             @db.Uuid
+  action_detail_id  String             @db.Uuid
+  status            String             @db.VarChar(255)
+  description       String
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_bcc_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_bcc_fk_2")
+  wf_action_detail  wf_action_detail   @relation(fields: [action_detail_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_call_circular_fk_3")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_ceiling_item {
+  id                                 String                              @id(map: "budg_budget_ceiling_item_pk") @db.Uuid
+  state                              Int
+  version                            BigInt
+  budget_m3                          Decimal                             @db.Decimal(19, 0)
+  budget_m2                          Decimal                             @db.Decimal(19, 0)
+  budget_m1                          Decimal                             @db.Decimal(19, 0)
+  budget                             Decimal                             @db.Decimal(19, 0)
+  prel_out_turn                      Decimal                             @default(0) @db.Decimal(19, 0)
+  mid_year                           Decimal                             @default(0) @db.Decimal(19, 0)
+  proj_out_turn                      Decimal                             @db.Decimal(19, 0)
+  budget_p1                          Decimal                             @db.Decimal(19, 0)
+  budget_p2                          Decimal                             @db.Decimal(19, 0)
+  budget_p3                          Decimal                             @db.Decimal(19, 0)
+  budget_sheet_id                    String                              @db.Uuid
+  fiscal_year_id                     String                              @db.Uuid
+  budget_ceiling_id                  String?                             @db.Uuid
+  category_id                        String                              @db.Uuid
+  locked                             Boolean                             @default(false)
+  comments                           String?
+  ceiling_category_type              String?                             @db.VarChar(100)
+  budg_budget_sheet                  budg_budget_sheet                   @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_ceiling_item_fk_1")
+  config_period                      config_period                       @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_ceiling_item_fk_2")
+  budg_administrative_budget_ceiling budg_administrative_budget_ceiling? @relation(fields: [budget_ceiling_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_ceiling_item_fk_3")
+  budg_ceiling_category              budg_ceiling_category               @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_ceiling_item_fk_4")
+
+  @@unique([budget_sheet_id, budget_ceiling_id, category_id], map: "budg_budget_ceiling_item_uk_1")
+  @@index([fiscal_year_id], map: "budg_budget_ceiling_item_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_framework_paper {
+  id                String             @id(map: "budg_budget_framework_paper_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  document_id       String             @db.Uuid
+  description       String
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_framework_paper_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_framework_paper_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_input {
+  id                                                                                String                   @id(map: "budg_budget_input_pk") @db.Uuid
+  state                                                                             Int
+  version                                                                           BigInt
+  budget_m3                                                                         Decimal                  @db.Decimal
+  budget_m2                                                                         Decimal                  @db.Decimal
+  budget_m1                                                                         Decimal                  @db.Decimal
+  budget                                                                            Decimal                  @db.Decimal
+  proj_out_turn                                                                     Decimal                  @db.Decimal
+  budget_p1                                                                         Decimal                  @db.Decimal
+  budget_p2                                                                         Decimal                  @db.Decimal
+  budget_p3                                                                         Decimal                  @db.Decimal
+  budget_sheet_id                                                                   String                   @db.Uuid
+  fiscal_year_id                                                                    String                   @db.Uuid
+  responsibility_center_id                                                          String                   @db.Uuid
+  economic_detail_id                                                                String                   @db.Uuid
+  prel_out_turn                                                                     Decimal                  @default(0) @db.Decimal
+  mid_year                                                                          Decimal                  @default(0) @db.Decimal
+  type                                                                              String                   @db.VarChar(50)
+  output_id                                                                         String?                  @db.Uuid
+  activity_id                                                                       String?                  @db.Uuid
+  program_id                                                                        String?                  @db.Uuid
+  funder_id                                                                         String?                  @db.Uuid
+  measurement_unit_id                                                               String?                  @db.Uuid
+  quantity                                                                          Float                    @default(0)
+  unit_price                                                                        Decimal                  @default(0) @db.Decimal
+  quantity_p1                                                                       Float                    @default(0)
+  quantity_p2                                                                       Float                    @default(0)
+  unit_price_p1                                                                     Decimal                  @default(0) @db.Decimal
+  unit_price_p2                                                                     Decimal                  @default(0) @db.Decimal
+  input                                                                             String?                  @db.VarChar(250)
+  budget_type                                                                       String                   @default("EXPENDITURE") @db.VarChar(50)
+  comments                                                                          String?
+  parent_budget_sheet_id                                                            String?                  @db.Uuid
+  over_spending_amount                                                              Decimal                  @default(0) @db.Decimal
+  head_id                                                                           String?                  @db.Uuid
+  agency_id                                                                         String?                  @db.Uuid
+  ceiling_category_id                                                               String?                  @db.Uuid
+  account_number                                                                    String?                  @db.VarChar(255)
+  account_name                                                                      String?                  @db.VarChar(255)
+  automatic_costing                                                                 Boolean                  @default(false)
+  budg_activity                                                                     budg_activity?           @relation(fields: [activity_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_budg_activity_fk")
+  budg_budget_sheet_budg_budget_input_budget_sheet_idTobudg_budget_sheet            budg_budget_sheet        @relation("budg_budget_input_budget_sheet_idTobudg_budget_sheet", fields: [budget_sheet_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "budg_budget_input_budg_budget_sheet_fk")
+  budg_budget_sheet_budg_budget_input_parent_budget_sheet_idTobudg_budget_sheet     budg_budget_sheet?       @relation("budg_budget_input_parent_budget_sheet_idTobudg_budget_sheet", fields: [parent_budget_sheet_id], references: [id], onUpdate: NoAction, map: "budg_budget_input_budg_budget_sheet_fk_1")
+  budg_ceiling_category                                                             budg_ceiling_category?   @relation(fields: [ceiling_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_budg_ceiling_category_fk")
+  budg_output                                                                       budg_output?             @relation(fields: [output_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "budg_budget_input_budg_output_fk")
+  coa_administrative_budg_budget_input_responsibility_center_idTocoa_administrative coa_administrative       @relation("budg_budget_input_responsibility_center_idTocoa_administrative", fields: [responsibility_center_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_coa_administrative_fk")
+  coa_administrative_budg_budget_input_head_idTocoa_administrative                  coa_administrative?      @relation("budg_budget_input_head_idTocoa_administrative", fields: [head_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_coa_administrative_fk_1")
+  coa_administrative_budg_budget_input_agency_idTocoa_administrative                coa_administrative?      @relation("budg_budget_input_agency_idTocoa_administrative", fields: [agency_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_coa_administrative_fk_2")
+  coa_fund                                                                          coa_fund?                @relation(fields: [funder_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_coa_fund_fk")
+  coa_program                                                                       coa_program?             @relation(fields: [program_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_coa_program_fk")
+  config_measurement_unit                                                           config_measurement_unit? @relation(fields: [measurement_unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_config_measurement_unit_fk")
+  config_period                                                                     config_period            @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_input_config_period_fk")
+
+  @@unique([fiscal_year_id, responsibility_center_id, economic_detail_id, program_id, funder_id], map: "budg_budget_input_uk1")
+  @@index([fiscal_year_id], map: "budg_budget_input_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_reallocation {
+  id                       String        @id(map: "budget_reallocation_pkey") @db.Uuid
+  state                    Int
+  version                  BigInt
+  creation_date            DateTime      @db.Date
+  fiscal_year_id           String        @db.Uuid
+  type                     String        @db.VarChar(255)
+  reallocation_number      String        @unique(map: "budget_reallocation_uk_1") @db.VarChar(255)
+  reallocated_amount       Decimal       @db.Decimal(19, 2)
+  reallocation_reason      String        @db.VarChar(512)
+  source_head_id           String        @db.Uuid
+  source_rc_id             String        @db.Uuid
+  source_budget_id         String        @db.Uuid
+  actual_expenditure       Decimal       @db.Decimal(20, 0)
+  approved_budget          Decimal       @db.Decimal(20, 0)
+  is_capital_expenditure   Boolean
+  is_statutory_expenditure Boolean
+  destination_head_id      String        @db.Uuid
+  destination_rc_id        String        @db.Uuid
+  destination_budget_id    String        @db.Uuid
+  action_detail_id         String?       @db.Uuid
+  status                   String        @db.VarChar(255)
+  comments                 String?
+  config_period            config_period @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budget_reallocation_fk_1")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_reallocation_document {
+  id                     String  @id(map: "budg_budget_reallocation_document_pk") @db.Uuid
+  state                  Int
+  version                BigInt
+  budget_reallocation_id String? @db.Uuid
+  document_id            String  @db.Uuid
+  description            String
+  comments               String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_release {
+  id                         String                       @id(map: "budg_budget_release_pk") @db.Uuid
+  state                      Int
+  version                    BigInt
+  reference_number           String                       @unique(map: "budg_budget_release_uk_1") @db.VarChar(255)
+  fiscal_year_id             String                       @db.Uuid
+  budget_sheet_id            String                       @db.Uuid
+  commitment_plan_id         String                       @db.Uuid
+  head_id                    String?                      @db.Uuid
+  department_id              String                       @db.Uuid
+  rc_id                      String                       @db.Uuid
+  status                     String                       @db.VarChar(255)
+  action_detail_id           String?                      @db.Uuid
+  total_amount               Decimal                      @db.Decimal
+  amount_q1                  Decimal                      @db.Decimal
+  amount_q2                  Decimal                      @db.Decimal
+  amount_q3                  Decimal                      @db.Decimal
+  amount_q4                  Decimal                      @db.Decimal
+  comments                   String?
+  config_period              config_period                @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_fk_1")
+  coa_administrative         coa_administrative           @relation(fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_fk_2")
+  wf_action_detail           wf_action_detail?            @relation(fields: [action_detail_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_fk_3")
+  budg_commitment_plan       budg_commitment_plan         @relation(fields: [commitment_plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_fk_4")
+  budg_budget_sheet          budg_budget_sheet            @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_fk_5")
+  budg_budget_release_detail budg_budget_release_detail[]
+
+  @@index([fiscal_year_id], map: "budg_budget_release_idx_1")
+  @@index([rc_id], map: "budg_budget_release_idx_2")
+  @@index([commitment_plan_id], map: "budg_budget_release_idx_3")
+  @@index([budget_sheet_id], map: "budg_budget_release_idx_4")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_release_detail {
+  id                  String              @id(map: "budg_budget_release_detail_pk") @db.Uuid
+  state               Int
+  version             BigInt
+  budget_release_id   String              @db.Uuid
+  economic_id         String              @unique(map: "budg_budget_release_detail_uk_1") @db.Uuid
+  fiscal_year_id      String              @db.Uuid
+  rc_id               String              @db.Uuid
+  total_amount        Decimal             @db.Decimal
+  amount_q1           Decimal             @db.Decimal
+  amount_q2           Decimal             @db.Decimal
+  amount_q3           Decimal             @db.Decimal
+  amount_q4           Decimal             @db.Decimal
+  comments            String?
+  config_period       config_period       @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_detail_fk_1")
+  coa_administrative  coa_administrative  @relation(fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_detail_fk_2")
+  budg_budget_release budg_budget_release @relation(fields: [budget_release_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_release_detail_fk_3")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_budget_sheet {
+  id                                                                                                       String                               @id(map: "budg_budget_sheet_pk") @db.Uuid
+  state                                                                                                    Int
+  version                                                                                                  BigInt
+  reference_number                                                                                         String                               @unique(map: "budg_budget_sheet_uk_1") @db.VarChar(255)
+  fiscal_year_id                                                                                           String                               @db.Uuid
+  level                                                                                                    String                               @db.VarChar(255)
+  administrative_id                                                                                        String?                              @db.Uuid
+  phase                                                                                                    String                               @db.VarChar(255)
+  action_detail_id                                                                                         String?                              @db.Uuid
+  status                                                                                                   String                               @db.VarChar(255)
+  parent_id                                                                                                String?                              @db.Uuid
+  comments                                                                                                 String?
+  ceiling_category_type                                                                                    String?                              @db.VarChar(100)
+  budget_type                                                                                              String?                              @db.VarChar(50)
+  budg_activity                                                                                            budg_activity[]
+  budg_administrative_budget_ceiling_budg_administrative_budget_ceiling_budget_sheet_idTobudg_budget_sheet budg_administrative_budget_ceiling[] @relation("budg_administrative_budget_ceiling_budget_sheet_idTobudg_budget_sheet")
+  budg_administrative_budget_ceiling_budg_administrative_budget_ceiling_bc_sheet_idTobudg_budget_sheet     budg_administrative_budget_ceiling[] @relation("budg_administrative_budget_ceiling_bc_sheet_idTobudg_budget_sheet")
+  budg_assumption                                                                                          budg_assumption[]
+  budg_budget_brief                                                                                        budg_budget_brief[]
+  budg_budget_call_circular                                                                                budg_budget_call_circular[]
+  budg_budget_ceiling_item                                                                                 budg_budget_ceiling_item[]
+  budg_budget_framework_paper                                                                              budg_budget_framework_paper[]
+  budg_budget_input_budg_budget_input_budget_sheet_idTobudg_budget_sheet                                   budg_budget_input[]                  @relation("budg_budget_input_budget_sheet_idTobudg_budget_sheet")
+  budg_budget_input_budg_budget_input_parent_budget_sheet_idTobudg_budget_sheet                            budg_budget_input[]                  @relation("budg_budget_input_parent_budget_sheet_idTobudg_budget_sheet")
+  budg_budget_release                                                                                      budg_budget_release[]
+  config_period                                                                                            config_period                        @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_sheet_fk_1")
+  coa_administrative                                                                                       coa_administrative?                  @relation(fields: [administrative_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_sheet_fk_2")
+  wf_action_detail                                                                                         wf_action_detail?                    @relation(fields: [action_detail_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_sheet_fk_3")
+  budg_budget_sheet                                                                                        budg_budget_sheet?                   @relation("budg_budget_sheetTobudg_budget_sheet", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_budget_sheet_fk_4")
+  other_budg_budget_sheet                                                                                  budg_budget_sheet[]                  @relation("budg_budget_sheetTobudg_budget_sheet")
+  budg_commitment_plan_ceiling                                                                             budg_commitment_plan_ceiling[]
+  budg_fiscal_framework_paper                                                                              budg_fiscal_framework_paper[]
+  budg_forwarding_letter                                                                                   budg_forwarding_letter[]
+  budg_gdp_data                                                                                            budg_gdp_data[]
+  budg_gdp_file                                                                                            budg_gdp_file[]
+  budg_head_budget_ceiling_budg_head_budget_ceiling_budget_sheet_idTobudg_budget_sheet                     budg_head_budget_ceiling[]           @relation("budg_head_budget_ceiling_budget_sheet_idTobudg_budget_sheet")
+  budg_head_budget_ceiling_budg_head_budget_ceiling_bc_sheet_idTobudg_budget_sheet                         budg_head_budget_ceiling[]           @relation("budg_head_budget_ceiling_bc_sheet_idTobudg_budget_sheet")
+  budg_key_achievement                                                                                     budg_key_achievement[]
+  budg_key_challenge                                                                                       budg_key_challenge[]
+  budg_mt_policy_objective                                                                                 budg_mt_policy_objective[]
+  budg_mtff_item                                                                                           budg_mtff_item[]
+  budg_output                                                                                              budg_output[]
+  budg_program_objective                                                                                   budg_program_objective[]
+  budg_rc_budget_ceiling                                                                                   budg_rc_budget_ceiling[]
+
+  @@index([fiscal_year_id], map: "budg_budget_sheet_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_ceiling_category {
+  id                             String                           @id @db.Uuid
+  state                          Int
+  version                        BigInt
+  code                           String                           @unique(map: "budg_ceiling_category_uk_1") @db.VarChar(3)
+  name                           String                           @db.VarChar(250)
+  description                    String?                          @db.VarChar(255)
+  type                           String?                          @db.VarChar(100)
+  comments                       String?
+  funder_id                      String?                          @db.Uuid
+  budg_budget_ceiling_item       budg_budget_ceiling_item[]
+  budg_budget_input              budg_budget_input[]
+  budg_ceiling_category_economic budg_ceiling_category_economic[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_ceiling_category_economic {
+  id                    String                @id @db.Uuid
+  economic_id           String?               @db.Uuid
+  category_id           String                @db.Uuid
+  comments              String?
+  state                 Int                   @default(1)
+  version               BigInt                @default(0)
+  funder_id             String?               @db.Uuid
+  mtef_component        String?               @db.VarChar(100)
+  budg_ceiling_category budg_ceiling_category @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_ceiling_category_economic_fk_1")
+  coa_economic          coa_economic?         @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_ceiling_category_economic_fk_2")
+
+  @@unique([category_id, economic_id, mtef_component], map: "budg_ceiling_category_economic_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_commitment_plan {
+  id                           String                        @id(map: "budg_commitment_plan_pk") @db.Uuid
+  state                        Int
+  version                      BigInt
+  reference_number             String?                       @db.VarChar(255)
+  commitment_plan_ceiling_id   String?                       @db.Uuid
+  fiscal_year_id               String                        @db.Uuid
+  head_id                      String?                       @db.Uuid
+  department_id                String                        @db.Uuid
+  rc_id                        String                        @db.Uuid
+  ceiling_category_type        String                        @db.VarChar(255)
+  status                       String                        @db.VarChar(255)
+  action_detail_id             String?                       @db.Uuid
+  total_amount                 Decimal                       @db.Decimal
+  amount_q1                    Decimal                       @db.Decimal
+  amount_q2                    Decimal                       @db.Decimal
+  amount_q3                    Decimal                       @db.Decimal
+  amount_q4                    Decimal                       @db.Decimal
+  comments                     String?
+  budget_sheet_id              String                        @db.Uuid
+  budg_budget_release          budg_budget_release[]
+  config_period                config_period                 @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_fk_1")
+  coa_administrative           coa_administrative            @relation(fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_fk_2")
+  wf_action_detail             wf_action_detail?             @relation(fields: [action_detail_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_fk_3")
+  budg_commitment_plan_ceiling budg_commitment_plan_ceiling? @relation(fields: [commitment_plan_ceiling_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_fk_5")
+  budg_commitment_plan_detail  budg_commitment_plan_detail[]
+
+  @@index([fiscal_year_id], map: "budg_commitment_plan_idx_1")
+  @@index([rc_id], map: "budg_commitment_plan_idx_2")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_commitment_plan_ceiling {
+  id                    String                 @id(map: "budg_commitment_plan_ceiling_pk") @db.Uuid
+  state                 Int
+  version               BigInt
+  reference_number      String                 @unique(map: "budg_commitment_plan_ceiling_uk_1") @db.VarChar(255)
+  fiscal_year_id        String                 @db.Uuid
+  budget_sheet_id       String                 @db.Uuid
+  head_id               String?                @db.Uuid
+  department_id         String?                @db.Uuid
+  rc_id                 String                 @db.Uuid
+  ceiling_category_type String                 @db.VarChar(255)
+  economic_id           String?                @db.Uuid
+  status                String                 @db.VarChar(255)
+  action_detail_id      String                 @db.Uuid
+  total_amount          Decimal                @db.Decimal
+  amount_m1             Decimal                @db.Decimal
+  amount_m2             Decimal                @db.Decimal
+  amount_m3             Decimal                @db.Decimal
+  amount_m4             Decimal                @db.Decimal
+  amount_m5             Decimal                @db.Decimal
+  amount_m6             Decimal                @db.Decimal
+  amount_m7             Decimal                @db.Decimal
+  amount_m8             Decimal                @db.Decimal
+  amount_m9             Decimal                @db.Decimal
+  amount_m10            Decimal                @db.Decimal
+  amount_m11            Decimal                @db.Decimal
+  amount_m12            Decimal                @db.Decimal
+  amount_q1             Decimal                @db.Decimal
+  amount_q2             Decimal                @db.Decimal
+  amount_q3             Decimal                @db.Decimal
+  amount_q4             Decimal                @db.Decimal
+  comments              String?
+  budg_commitment_plan  budg_commitment_plan[]
+  config_period         config_period          @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_ceiling_fk_1")
+  coa_administrative    coa_administrative     @relation(fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_ceiling_fk_2")
+  wf_action_detail      wf_action_detail       @relation(fields: [action_detail_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_ceiling_fk_3")
+  coa_economic          coa_economic?          @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_ceiling_fk_4")
+  budg_budget_sheet     budg_budget_sheet      @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_ceiling_fk_5")
+
+  @@index([fiscal_year_id], map: "budg_commitment_plan_ceiling_idx_1")
+  @@index([rc_id], map: "budg_commitment_plan_ceiling_idx_2")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_commitment_plan_detail {
+  id                    String                @id(map: "budg_commitment_plan_detail_pk") @db.Uuid
+  state                 Int
+  version               BigInt
+  commitment_plan_id    String?               @db.Uuid
+  fiscal_year_id        String                @db.Uuid
+  rc_id                 String                @db.Uuid
+  ceiling_category_type String                @db.VarChar(255)
+  economic_id           String                @db.Uuid
+  total_amount          Decimal               @db.Decimal
+  amount_m1             Decimal               @db.Decimal
+  amount_m2             Decimal               @db.Decimal
+  amount_m3             Decimal               @db.Decimal
+  amount_m4             Decimal               @db.Decimal
+  amount_m5             Decimal               @db.Decimal
+  amount_m6             Decimal               @db.Decimal
+  amount_m7             Decimal               @db.Decimal
+  amount_m8             Decimal               @db.Decimal
+  amount_m9             Decimal               @db.Decimal
+  amount_m10            Decimal               @db.Decimal
+  amount_m11            Decimal               @db.Decimal
+  amount_m12            Decimal               @db.Decimal
+  amount_q1             Decimal               @db.Decimal
+  amount_q2             Decimal               @db.Decimal
+  amount_q3             Decimal               @db.Decimal
+  amount_q4             Decimal               @db.Decimal
+  comments              String?
+  config_period         config_period         @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_detail_fk_1")
+  coa_administrative    coa_administrative    @relation(fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_detail_fk_2")
+  coa_economic          coa_economic          @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_detail_fk_3")
+  budg_commitment_plan  budg_commitment_plan? @relation(fields: [commitment_plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_commitment_plan_detail_fk_4")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_fiscal_framework_paper {
+  id                String             @id(map: "budg_ffp_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  document_id       String             @db.Uuid
+  description       String
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_ffp_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_ffp_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_forwarding_letter {
+  id                String             @id(map: "budg_forwarding_letter_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  document_id       String             @db.Uuid
+  description       String
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_forwarding_letter_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_forwarding_letter_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_gdp_data {
+  id                String             @id(map: "budg_gdp_data_pk") @db.Uuid
+  reference_number  String             @db.VarChar(255)
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  template_id       String             @db.Uuid
+  parameter_id      String             @db.Uuid
+  value_m7          Decimal            @db.Decimal
+  value_m6          Decimal            @db.Decimal
+  value_m5          Decimal            @db.Decimal
+  value_m4          Decimal            @db.Decimal
+  value_m3          Decimal            @db.Decimal
+  value_m2          Decimal            @db.Decimal
+  value_m1          Decimal            @db.Decimal
+  value             Decimal            @db.Decimal
+  value_p1          Decimal            @db.Decimal
+  value_p2          Decimal            @db.Decimal
+  value_p3          Decimal            @db.Decimal
+  value_p4          Decimal            @db.Decimal
+  comments          String?
+  bc_sheet_id       String?            @db.Uuid
+  state             Int                @default(1)
+  version           BigInt             @default(0)
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_gdp_data_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_gdp_data_fk_2")
+
+  @@unique([budget_sheet_id, reference_number], map: "budg_gdp_data_uk_1")
+  @@index([fiscal_year_id], map: "budg_gdp_data_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_gdp_file {
+  id                String             @id(map: "budg_gdp_file_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  document_id       String             @db.Uuid
+  description       String
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_gdp_file_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_gdp_file_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_gdp_parameter {
+  id              String  @id(map: "budg_gdp_parameter_pk") @db.Uuid
+  state           Int
+  version         BigInt
+  name            String  @unique(map: "budg_gdp_parameter_uk_1") @db.VarChar(255)
+  description     String  @db.VarChar(255)
+  gdp_template_id String? @db.Uuid
+  comments        String?
+  usage           String? @db.VarChar(50)
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_gdp_template {
+  id               String  @id(map: "budg_gdp_template_pk") @db.Uuid
+  state            Int
+  version          BigInt
+  name             String  @unique(map: "budg_gdp_template_uk_2") @db.VarChar(255)
+  reference_number String  @unique(map: "budg_gdp_template_uk_1") @db.VarChar(255)
+  action_detail_id String? @db.Uuid
+  status           String  @db.VarChar(255)
+  comments         String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_head_budget_ceiling {
+  id                                                                            String             @id(map: "budg_budget_ceiling_pk") @db.Uuid
+  state                                                                         Int
+  version                                                                       BigInt
+  budget_m3                                                                     Decimal            @db.Decimal
+  budget_m2                                                                     Decimal            @db.Decimal
+  budget_m1                                                                     Decimal            @db.Decimal
+  budget                                                                        Decimal            @db.Decimal
+  proj_out_turn                                                                 Decimal            @db.Decimal
+  budget_p1                                                                     Decimal            @db.Decimal
+  budget_p2                                                                     Decimal            @db.Decimal
+  budget_p3                                                                     Decimal            @db.Decimal
+  budget_sheet_id                                                               String             @db.Uuid
+  fiscal_year_id                                                                String             @db.Uuid
+  head_id                                                                       String             @db.Uuid
+  prel_out_turn                                                                 Decimal            @default(0) @db.Decimal
+  mid_year                                                                      Decimal            @default(0) @db.Decimal
+  locked                                                                        Boolean            @default(false)
+  comments                                                                      String?
+  ceiling_category_type                                                         String?            @db.VarChar(100)
+  bc_sheet_id                                                                   String?            @db.Uuid
+  budg_budget_sheet_budg_head_budget_ceiling_budget_sheet_idTobudg_budget_sheet budg_budget_sheet  @relation("budg_head_budget_ceiling_budget_sheet_idTobudg_budget_sheet", fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_head_budget_ceiling_budg_budget_sheet_fk_1")
+  budg_budget_sheet_budg_head_budget_ceiling_bc_sheet_idTobudg_budget_sheet     budg_budget_sheet? @relation("budg_head_budget_ceiling_bc_sheet_idTobudg_budget_sheet", fields: [bc_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_head_budget_ceiling_budg_budget_sheet_fk_2")
+  config_period                                                                 config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_head_budget_ceiling_fk_fy")
+
+  @@unique([budget_sheet_id, head_id, ceiling_category_type], map: "budg_budget_ceiling_uk_1")
+  @@index([fiscal_year_id], map: "budg_budget_ceiling_index_1")
+  @@index([fiscal_year_id], map: "budg_rc_budget_ceiling_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_key_achievement {
+  id                String             @id(map: "budg_key_achievement_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  reference_number  String             @unique(map: "budg_key_achievement_uk_1") @db.VarChar(255)
+  content           String
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  rc_id             String?            @db.Uuid
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_key_achievement_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_key_achievement_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_key_challenge {
+  id                String             @id(map: "budg_key_challenge_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  reference_number  String             @unique(map: "budg_key_challenge_uk_1") @db.VarChar(255)
+  content           String
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  rc_id             String?            @db.Uuid
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_key_challenge_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_key_challenge_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_key_issue {
+  id           String        @id(map: "coa_key_issue_pkey") @db.Uuid
+  state        Int
+  version      BigInt
+  code         String        @db.VarChar(5)
+  name         String        @db.VarChar(250)
+  description  String?       @db.VarChar(255)
+  outcome_id   String?       @db.Uuid
+  comments     String?
+  budg_outcome budg_outcome? @relation(fields: [outcome_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_key_issue_fk")
+
+  @@unique([outcome_id, code], map: "coa_key_issue_uk_1")
+  @@schema("public")
+}
+
+model budg_key_performance_indicator {
+  id                       String              @id(map: "budg_key_performance_indicator_pk") @db.Uuid
+  responsibility_center_id String?             @db.Uuid
+  fiscal_year_id           String              @db.Uuid
+  type                     String              @db.VarChar(255)
+  title                    String              @db.VarChar(255)
+  value_m2                 Float
+  value_m1                 Float
+  value                    Float
+  value_p1                 Float
+  value_p2                 Float
+  budget_sheet_id          String              @db.Uuid
+  comments                 String?
+  coa_administrative       coa_administrative? @relation(fields: [responsibility_center_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_key_performance_indicator_fk_1")
+  config_period            config_period       @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_key_performance_indicator_fk_2")
+
+  @@unique([responsibility_center_id, fiscal_year_id, title], map: "budg_key_performance_indicator_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_mt_policy_objective {
+  id                String             @id(map: "budg_mt_policy_objective_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  reference_number  String             @unique(map: "budg_mt_policy_objective_uk_1") @db.VarChar(255)
+  content           String
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  rc_id             String?            @db.Uuid
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_mt_policy_objective_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_mt_policy_objective_fk_2")
+
+  @@index([fiscal_year_id], map: "budg_mt_policy_objective_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_mtff_economic {
+  id                 String              @id(map: "budg_mtff_economic_pk") @db.Uuid
+  state              Int
+  version            BigInt
+  economic_id        String              @unique(map: "budg_mtff_economic_uk_1") @db.Uuid
+  mtff_template_id   String?             @db.Uuid
+  comments           String?
+  header_id          String?             @db.Uuid
+  coa_economic       coa_economic        @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_mtff_economic_coa_economic_fk_1")
+  budg_mtff_template budg_mtff_template? @relation(fields: [mtff_template_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_mtff_economic_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_mtff_item {
+  id                   String            @id(map: "budg_mtff_item_pk") @db.Uuid
+  state                Int
+  version              BigInt
+  budget_m3            Decimal           @db.Decimal(19, 0)
+  budget_m2            Decimal           @db.Decimal(19, 0)
+  budget_m1            Decimal           @db.Decimal(19, 0)
+  budget               Decimal           @db.Decimal(19, 0)
+  proj_out_turn        Decimal           @db.Decimal(19, 0)
+  budget_p1            Decimal           @db.Decimal(19, 0)
+  budget_p2            Decimal           @db.Decimal(19, 0)
+  budget_p3            Decimal           @db.Decimal(19, 0)
+  budget_sheet_id      String            @db.Uuid
+  fiscal_year_id       String            @db.Uuid
+  mtff_template_id     String?           @db.Uuid
+  economic_category_id String?           @db.Uuid
+  prel_out_turn        Decimal           @default(0) @db.Decimal
+  mid_year             Decimal           @default(0) @db.Decimal
+  comments             String?
+  gdp_parameter_id     String?           @db.Uuid
+  header_id            String?           @db.Uuid
+  bc_sheet_id          String?           @db.Uuid
+  budg_budget_sheet    budg_budget_sheet @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_mtff_item_fk_1")
+  config_period        config_period     @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_mtff_item_fk_fy")
+
+  @@unique([budget_sheet_id, economic_category_id], map: "budg_mtff_item_uk_1")
+  @@index([fiscal_year_id], map: "budg_mtff_item_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_mtff_parameter {
+  id               String  @id(map: "budg_mtff_parameter_pk") @db.Uuid
+  state            Int
+  version          BigInt
+  name             String  @unique(map: "budg_mtff_parameter_uk_1") @db.VarChar(255)
+  description      String  @db.VarChar(255)
+  mtff_template_id String? @db.Uuid
+  comments         String?
+  header_id        String? @db.Uuid
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_mtff_template {
+  id                 String               @id(map: "budg_mtff_template_pk") @db.Uuid
+  state              Int
+  version            BigInt
+  reference_number   String               @unique(map: "budg_mtff_template_uk_1") @db.VarChar(255)
+  action_detail_id   String               @db.Uuid
+  status             String               @db.VarChar(255)
+  comments           String?
+  budg_mtff_economic budg_mtff_economic[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_national_development_plan {
+  id          String    @id @db.Uuid
+  state       Int
+  version     BigInt
+  code        String    @unique(map: "budg_national_development_plan_uk_1") @db.VarChar(10)
+  name        String    @db.VarChar(250)
+  description String?   @db.VarChar(255)
+  start_date  DateTime? @db.Date
+  end_date    DateTime? @db.Date
+  comments    String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_outcome {
+  id                    String                  @id(map: "coa_outcome_pkey") @db.Uuid
+  state                 Int
+  version               BigInt
+  outcome_type          String                  @db.VarChar(20)
+  code                  String                  @db.VarChar(5)
+  name                  String                  @db.VarChar(250)
+  description           String?                 @db.VarChar(255)
+  level                 Int
+  parent_id             String?                 @db.Uuid
+  plan_id               String?                 @db.Uuid
+  program_id            String?                 @db.Uuid
+  comments              String?
+  budg_key_issue        budg_key_issue[]
+  budg_outcome_strategy budg_outcome_strategy[]
+  budg_outcome_target   budg_outcome_target[]
+  budg_output           budg_output[]
+
+  @@unique([parent_id, code], map: "coa_outcome_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_outcome_strategy {
+  id           String        @id(map: "coa_outcome_strategy_pkey") @db.Uuid
+  state        Int
+  version      BigInt
+  code         String        @db.VarChar(5)
+  name         String        @db.VarChar(250)
+  description  String?       @db.VarChar(255)
+  outcome_id   String?       @db.Uuid
+  comments     String?
+  budg_outcome budg_outcome? @relation(fields: [outcome_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_outcome_strategy_fk")
+
+  @@unique([outcome_id, code], map: "coa_outcome_strategy_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_outcome_target {
+  id           String        @id(map: "coa_outcome_target_pkey") @db.Uuid
+  state        Int
+  version      BigInt
+  code         String        @db.VarChar(5)
+  name         String        @db.VarChar(250)
+  description  String?       @db.VarChar(255)
+  outcome_id   String?       @db.Uuid
+  comments     String?
+  budg_outcome budg_outcome? @relation(fields: [outcome_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_outcome_target_fk")
+
+  @@unique([outcome_id, code], map: "coa_outcome_target_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_output {
+  id                String              @id(map: "budg_output_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  code              String              @unique(map: "budg_output_uk_1") @db.VarChar(255)
+  name              String              @db.VarChar(255)
+  program_id        String?             @db.Uuid
+  budget_sheet_id   String?             @db.Uuid
+  fiscal_year_id    String              @db.Uuid
+  rc_id             String?             @db.Uuid
+  parent_id         String?             @db.Uuid
+  description       String?             @db.VarChar(500)
+  outcome_id        String?             @db.Uuid
+  sub_program_id    String?             @db.Uuid
+  comments          String?
+  budg_budget_input budg_budget_input[]
+  budg_budget_sheet budg_budget_sheet?  @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_output_fk_1")
+  config_period     config_period       @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_output_fk_2")
+  budg_outcome      budg_outcome?       @relation(fields: [outcome_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_output_fk_3")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_program_objective {
+  id                String             @id(map: "budg_program_objective_pk") @db.Uuid
+  state             Int
+  version           BigInt
+  code              String             @unique(map: "budg_program_objective_uk_1") @db.VarChar(255)
+  name              String             @db.VarChar(255)
+  program_id        String?            @db.Uuid
+  budget_sheet_id   String?            @db.Uuid
+  fiscal_year_id    String             @db.Uuid
+  rc_id             String?            @db.Uuid
+  parent_id         String?            @db.Uuid
+  description       String?            @db.VarChar(500)
+  comments          String?
+  budg_budget_sheet budg_budget_sheet? @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_program_objective_fk_1")
+  config_period     config_period      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_program_objective_fk_2")
+
+  @@index([fiscal_year_id], map: "budg_program_objective_index_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_rc_budget_ceiling {
+  id                    String            @id(map: "budg_rc_budget_ceiling_pk") @db.Uuid
+  state                 Int
+  version               BigInt
+  budget_m3             Decimal           @db.Decimal
+  budget_m2             Decimal           @db.Decimal
+  budget_m1             Decimal           @db.Decimal
+  budget                Decimal           @db.Decimal
+  proj_out_turn         Decimal           @db.Decimal
+  budget_p1             Decimal           @db.Decimal
+  budget_p2             Decimal           @db.Decimal
+  budget_p3             Decimal           @db.Decimal
+  budget_sheet_id       String            @db.Uuid
+  fiscal_year_id        String            @db.Uuid
+  prel_out_turn         Decimal           @default(0) @db.Decimal
+  mid_year              Decimal           @default(0) @db.Decimal
+  rc_id                 String            @db.Uuid
+  economic_id           String?           @db.Uuid
+  currency_id           String            @db.Uuid
+  ceiling_amount        Decimal           @db.Decimal
+  local_amount          Decimal           @db.Decimal
+  locked                Boolean           @default(false)
+  head_id               String?           @db.Uuid
+  comments              String?
+  ceiling_category_type String?           @db.VarChar(100)
+  funder_id             String?           @db.Uuid
+  budg_budget_sheet     budg_budget_sheet @relation(fields: [budget_sheet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_rc_budget_ceiling_budg_budget_sheet_fk_1")
+  config_period         config_period     @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_rc_budget_ceiling_fk_fy")
+
+  @@unique([budget_sheet_id, rc_id, economic_id], map: "budg_rc_budget_ceiling_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_strategy_intervention {
+  id          String  @id(map: "coa_strategy_intervention_pkey") @db.Uuid
+  state       Int
+  version     BigInt
+  code        String  @db.VarChar(5)
+  name        String  @db.VarChar(250)
+  description String? @db.VarChar(255)
+  strategy_id String? @db.Uuid
+  comments    String?
+
+  @@unique([strategy_id, code], map: "coa_strategy_intervention_uk_1")
+  @@unique([strategy_id, name], map: "coa_strategy_intervention_uk_2")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_supplementary_budget {
+  id                               String                             @id(map: "supplementary_budget_pkey") @db.Uuid
+  state                            Int
+  version                          BigInt
+  amount                           Decimal                            @db.Decimal(19, 2)
+  creation_date                    DateTime                           @db.Date
+  reason                           String                             @db.VarChar(500)
+  status                           String                             @db.VarChar(9)
+  supplementary_budget_number      String                             @unique(map: "budg_supplementary_budget_uk_1") @db.VarChar(20)
+  budget_record_id                 String                             @db.Uuid
+  cost_center_id                   String                             @db.Uuid
+  fiscal_year_id                   String                             @db.Uuid
+  comments                         String?
+  config_period                    config_period                      @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_supplementary_budget_fk_1")
+  budg_supplementary_budget_status budg_supplementary_budget_status[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budg_supplementary_budget_status {
+  id                        String                     @id(map: "supplementary_budget_status_pkey") @db.Uuid
+  state                     Int
+  version                   BigInt
+  comments                  String?                    @db.VarChar(255)
+  status                    String                     @db.VarChar(255)
+  status_date               DateTime                   @db.Timestamp(6)
+  principal_id              String                     @db.Uuid
+  supplementary_budget_id   String?                    @db.Uuid
+  budg_supplementary_budget budg_supplementary_budget? @relation(fields: [supplementary_budget_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_supplementary_budget_status_fk_1")
+  sec_system_user           sec_system_user            @relation(fields: [principal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_supplementary_budget_status_fk_2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model budg_vehicle_plant_rule {
+  id             String         @db.Uuid
+  state          Int
+  version        BigInt
+  rule           String         @db.VarChar(250)
+  value          Float
+  comments       String?
+  fiscal_year_id String?        @db.Uuid
+  config_period  config_period? @relation(fields: [fiscal_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "budg_vehicle_plant_rule_fk_fy")
+
+  @@unique([fiscal_year_id, rule], map: "budg_vehicle_plant_rule_uk1")
+  @@ignore
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_administrative {
+  id                                                                               String                               @id @db.Uuid
+  state                                                                            Int
+  version                                                                          BigInt
+  type                                                                             String                               @db.VarChar(20)
+  code                                                                             String                               @db.VarChar(5)
+  full_code                                                                        String                               @db.VarChar(12)
+  name                                                                             String                               @db.VarChar(250)
+  description                                                                      String?                              @db.VarChar(255)
+  level                                                                            Int
+  parent_id                                                                        String?                              @db.Uuid
+  function_id                                                                      String?                              @db.Uuid
+  location_id                                                                      String?                              @db.Uuid
+  program_id                                                                       String?                              @db.Uuid
+  comments                                                                         String?
+  economic_id                                                                      String?                              @db.Uuid
+  agency_category                                                                  String?                              @db.VarChar(10)
+  objective                                                                        String?                              @db.VarChar(500)
+  ast_transport_equipment                                                          ast_transport_equipment[]
+  ast_vehicle_budget_component                                                     ast_vehicle_budget_component[]
+  budg_activity                                                                    budg_activity[]
+  budg_administrative_budget_ceiling                                               budg_administrative_budget_ceiling[]
+  budg_budget_input_budg_budget_input_responsibility_center_idTocoa_administrative budg_budget_input[]                  @relation("budg_budget_input_responsibility_center_idTocoa_administrative")
+  budg_budget_input_budg_budget_input_head_idTocoa_administrative                  budg_budget_input[]                  @relation("budg_budget_input_head_idTocoa_administrative")
+  budg_budget_input_budg_budget_input_agency_idTocoa_administrative                budg_budget_input[]                  @relation("budg_budget_input_agency_idTocoa_administrative")
+  budg_budget_release                                                              budg_budget_release[]
+  budg_budget_release_detail                                                       budg_budget_release_detail[]
+  budg_budget_sheet                                                                budg_budget_sheet[]
+  budg_commitment_plan                                                             budg_commitment_plan[]
+  budg_commitment_plan_ceiling                                                     budg_commitment_plan_ceiling[]
+  budg_commitment_plan_detail                                                      budg_commitment_plan_detail[]
+  budg_key_performance_indicator                                                   budg_key_performance_indicator[]
+  coa_administrative                                                               coa_administrative?                  @relation("coa_administrativeTocoa_administrative", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_administrative_fk2")
+  other_coa_administrative                                                         coa_administrative[]                 @relation("coa_administrativeTocoa_administrative")
+  coa_location                                                                     coa_location?                        @relation(fields: [location_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_administrative_fk3")
+  coa_economic                                                                     coa_economic?                        @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_administrative_fk4")
+  coa_administrative_funding                                                       coa_administrative_funding[]
+  coa_administrative_program                                                       coa_administrative_program[]
+  hr_employee_hr_employee_head_idTocoa_administrative                              hr_employee[]                        @relation("hr_employee_head_idTocoa_administrative")
+  hr_employee_hr_employee_rc_idTocoa_administrative                                hr_employee[]                        @relation("hr_employee_rc_idTocoa_administrative")
+  hr_post_number_hr_post_number_head_idTocoa_administrative                        hr_post_number[]                     @relation("hr_post_number_head_idTocoa_administrative")
+  hr_post_number_hr_post_number_rc_idTocoa_administrative                          hr_post_number[]                     @relation("hr_post_number_rc_idTocoa_administrative")
+
+  @@unique([parent_id, code], map: "coa_administrative_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_administrative_funding {
+  id                 String             @id @db.Uuid
+  administrative_id  String             @db.Uuid
+  funder_id          String             @db.Uuid
+  comments           String?
+  state              Int                @default(0)
+  version            BigInt             @default(0)
+  coa_administrative coa_administrative @relation(fields: [administrative_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_administrative_funding_fk_1")
+  coa_fund           coa_fund           @relation(fields: [funder_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_administrative_funding_fk_2")
+
+  @@unique([administrative_id, funder_id], map: "coa_administrative_funding_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_administrative_program {
+  id                 String             @id @db.Uuid
+  administrative_id  String             @db.Uuid
+  program_id         String             @db.Uuid
+  specific_objective String?
+  comments           String?
+  state              Int                @default(0)
+  version            BigInt             @default(0)
+  coa_administrative coa_administrative @relation(fields: [administrative_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_administrative_program_fk_1")
+  coa_program        coa_program        @relation(fields: [program_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_administrative_program_fk_2")
+
+  @@unique([administrative_id, program_id], map: "coa_administrative_program_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_economic {
+  id                             String                           @id @db.Uuid
+  state                          Int
+  version                        BigInt
+  type                           String                           @db.VarChar(20)
+  code                           String                           @db.VarChar(5)
+  full_code                      String                           @db.VarChar(12)
+  name                           String                           @db.VarChar(250)
+  description                    String?                          @db.VarChar(255)
+  level                          Int
+  parent_id                      String?                          @db.Uuid
+  transaction_type               String?                          @db.VarChar(20)
+  comments                       String?
+  old_code                       String?                          @db.VarChar(12)
+  account_sens                   String?                          @db.VarChar(20)
+  account_balance_behaviour      String?                          @db.VarChar(30)
+  ast_vehicle_budget_component   ast_vehicle_budget_component[]
+  budg_ceiling_category_economic budg_ceiling_category_economic[]
+  budg_commitment_plan_ceiling   budg_commitment_plan_ceiling[]
+  budg_commitment_plan_detail    budg_commitment_plan_detail[]
+  budg_mtff_economic             budg_mtff_economic?
+  coa_administrative             coa_administrative[]
+  coa_economic                   coa_economic?                    @relation("coa_economicTocoa_economic", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_economic_fk1")
+  other_coa_economic             coa_economic[]                   @relation("coa_economicTocoa_economic")
+  coa_program_economic           coa_program_economic[]
+  hr_salary_component            hr_salary_component[]
+
+  @@unique([parent_id, code], map: "coa_economic_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_function {
+  id          String  @id @db.Uuid
+  state       Int
+  version     BigInt
+  type        String  @db.VarChar(20)
+  code        String  @db.VarChar(5)
+  full_code   String  @db.VarChar(12)
+  name        String  @db.VarChar(250)
+  description String? @db.VarChar(255)
+  level       Int
+  parent_id   String? @db.Uuid
+  comments    String?
+
+  @@unique([parent_id, code], map: "coa_function_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_fund {
+  id                         String                       @id @db.Uuid
+  state                      Int
+  version                    BigInt
+  type                       String                       @db.VarChar(20)
+  code                       String                       @db.VarChar(5)
+  full_code                  String                       @db.VarChar(12)
+  name                       String                       @db.VarChar(250)
+  description                String?                      @db.VarChar(255)
+  level                      Int
+  parent_id                  String?                      @db.Uuid
+  comments                   String?
+  budg_budget_input          budg_budget_input[]
+  coa_administrative_funding coa_administrative_funding[]
+  coa_fund                   coa_fund?                    @relation("coa_fundTocoa_fund", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_fund_fk1")
+  other_coa_fund             coa_fund[]                   @relation("coa_fundTocoa_fund")
+
+  @@unique([parent_id, code], map: "coa_fund_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_location {
+  id                   String                 @id @db.Uuid
+  state                Int
+  version              BigInt
+  type                 String                 @db.VarChar(20)
+  code                 String                 @db.VarChar(5)
+  full_code            String                 @db.VarChar(12)
+  name                 String                 @db.VarChar(250)
+  description          String?                @db.VarChar(255)
+  level                Int
+  parent_id            String?                @db.Uuid
+  comments             String?
+  coa_administrative   coa_administrative[]
+  coa_location         coa_location?          @relation("coa_locationTocoa_location", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_location_coa_location_fk")
+  other_coa_location   coa_location[]         @relation("coa_locationTocoa_location")
+  coa_project_location coa_project_location[]
+
+  @@unique([parent_id, code], map: "coa_location_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_program {
+  id                         String                       @id @db.Uuid
+  state                      Int
+  version                    BigInt
+  type                       String                       @db.VarChar(20)
+  code                       String                       @db.VarChar(5)
+  full_code                  String                       @unique(map: "coa_program_uk_2") @db.VarChar(12)
+  name                       String                       @db.VarChar(250)
+  description                String?                      @db.VarChar(255)
+  level                      Int
+  parent_id                  String?                      @db.Uuid
+  activity_type              String?                      @db.VarChar(15)
+  specific_objective         String?
+  comments                   String?
+  action_detail_id           String?                      @db.Uuid
+  status                     String                       @default("PREPARED") @db.VarChar(255)
+  coordinator_id             String?                      @db.Uuid
+  sectorial_outcome_id       String?                      @db.Uuid
+  economic_sector            String?                      @db.VarChar(1)
+  national                   Boolean?
+  input_category             String?                      @db.VarChar(50)
+  administrative_id          String?                      @db.Uuid
+  output_id                  String?                      @db.Uuid
+  implementation             Bytes?
+  head_impl                  Float?
+  works_impl                 Float?
+  micro_impl                 Float?
+  budg_activity              budg_activity[]
+  budg_budget_input          budg_budget_input[]
+  coa_administrative_program coa_administrative_program[]
+  coa_program_economic       coa_program_economic[]
+  coa_project_location       coa_project_location[]
+
+  @@unique([parent_id, code], map: "coa_program_uk_1")
+  @@unique([parent_id, name], map: "coa_program_uk_3")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_program_economic {
+  id           String       @id @db.Uuid
+  program_id   String       @db.Uuid
+  economic_id  String       @db.Uuid
+  comments     String?
+  state        Int          @default(1)
+  version      BigInt       @default(0)
+  coa_program  coa_program  @relation(fields: [program_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_program_economic_fk_1")
+  coa_economic coa_economic @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_program_economic_fk_2")
+
+  @@unique([program_id, economic_id], map: "coa_program_economic_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coa_project_location {
+  id              String       @id @db.Uuid
+  project_id      String       @db.Uuid
+  constituency_id String       @db.Uuid
+  share           Float
+  comments        String?
+  state           Int          @default(1)
+  version         BigInt       @default(0)
+  chief_dom_id    String?      @db.Uuid
+  coa_program     coa_program  @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_project_location_fk_1")
+  coa_location    coa_location @relation(fields: [constituency_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "coa_project_location_fk_2")
+
+  @@unique([project_id, constituency_id, chief_dom_id], map: "coa_project_location_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_bank {
+  id                           String                         @id @db.Uuid
+  state                        Int
+  version                      BigInt
+  code                         String                         @unique(map: "config_bank_uk1") @db.VarChar(3)
+  description                  String?                        @db.VarChar(255)
+  name                         String                         @db.VarChar(250)
+  account_number_length        Int?
+  swift_code                   String?                        @db.VarChar
+  comments                     String?
+  config_supplier_bank_account config_supplier_bank_account[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_cash_account {
+  id             String  @id @db.Uuid
+  state          Int
+  version        BigInt
+  balance        Float
+  type           String  @db.VarChar(255)
+  account_number String  @unique(map: "ukrxel0pbg7bh7sprjcxw7k7d0i") @db.VarChar(255)
+  account_name   String  @db.VarChar(255)
+  comments       String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_contract {
+  id               String          @id @db.Uuid
+  state            Int
+  version          BigInt
+  amount           Decimal         @db.Decimal(19, 2)
+  description      String          @db.VarChar(250)
+  end_date         DateTime        @db.Date
+  reference_number String?         @db.VarChar(30)
+  start_date       DateTime        @db.Date
+  status           String          @db.VarChar(255)
+  supplier_id      String          @db.Uuid
+  amount_due       Decimal?        @db.Decimal(19, 2)
+  comments         String?
+  config_supplier  config_supplier @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "config_contract_fk1")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_currency {
+  id                           String                         @id @db.Uuid
+  state                        Int
+  version                      BigInt
+  code                         String                         @unique(map: "currency_uk1") @db.VarChar(3)
+  description                  String?                        @db.VarChar(255)
+  name                         String                         @db.VarChar(250)
+  decimal_places               Int
+  comments                     String?
+  budg_bfp_currency_rate       budg_bfp_currency_rate[]
+  config_currency_rate         config_currency_rate[]
+  config_supplier_bank_account config_supplier_bank_account[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_currency_rate {
+  id              String          @id @db.Uuid
+  state           Int
+  version         BigInt
+  buying_rate     Decimal         @db.Decimal(19, 2)
+  middle_rate     Decimal         @db.Decimal(19, 2)
+  rate_date       DateTime        @db.Date
+  selling_rate    Decimal         @db.Decimal(19, 2)
+  currency_id     String          @db.Uuid
+  comments        String?
+  config_currency config_currency @relation(fields: [currency_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "config_currency_rate_fk1")
+
+  @@unique([rate_date, currency_id], map: "config_currency_rate_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_group_header {
+  id              String            @id @db.Uuid
+  state           Int
+  version         BigInt
+  code            String            @db.VarChar(3)
+  name            String            @db.VarChar(250)
+  description     String?           @db.VarChar(255)
+  type            String?           @db.VarChar(100)
+  comments        String?
+  parent_id       String?           @db.Uuid
+  budg_assumption budg_assumption[]
+
+  @@unique([parent_id, type, code], map: "config_group_header_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_measurement_unit {
+  id                String              @id @db.Uuid
+  state             Int
+  version           BigInt
+  code              String              @unique(map: "config_measurement_unit_uk2") @db.VarChar(3)
+  description       String?             @db.VarChar(255)
+  name              String              @unique(map: "config_measurement_unit_uk1") @db.VarChar(250)
+  measurement_type  String              @db.VarChar(255)
+  comments          String?
+  budg_budget_input budg_budget_input[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_period {
+  id                                 String                               @id(map: "config_period_pk") @db.Uuid
+  state                              Int
+  version                            BigInt
+  description                        String                               @db.VarChar(255)
+  name                               String                               @unique(map: "uk_config_period_name") @db.VarChar(250)
+  type                               String                               @db.VarChar(40)
+  end_date                           DateTime                             @db.Date
+  start_date                         DateTime                             @db.Date
+  parent_id                          String?                              @db.Uuid
+  accounting_open                    Boolean
+  planning_budget_open               Boolean                              @default(false)
+  comments                           String?
+  ast_fuel_type                      ast_fuel_type[]
+  ast_transport_equipment            ast_transport_equipment[]
+  budg_activity                      budg_activity[]
+  budg_administrative_budget_ceiling budg_administrative_budget_ceiling[]
+  budg_assumption                    budg_assumption[]
+  budg_bfp_currency_rate             budg_bfp_currency_rate[]
+  budg_budget_brief                  budg_budget_brief[]
+  budg_budget_call_circular          budg_budget_call_circular[]
+  budg_budget_ceiling_item           budg_budget_ceiling_item[]
+  budg_budget_framework_paper        budg_budget_framework_paper[]
+  budg_budget_input                  budg_budget_input[]
+  budg_budget_reallocation           budg_budget_reallocation[]
+  budg_budget_release                budg_budget_release[]
+  budg_budget_release_detail         budg_budget_release_detail[]
+  budg_budget_sheet                  budg_budget_sheet[]
+  budg_commitment_plan               budg_commitment_plan[]
+  budg_commitment_plan_ceiling       budg_commitment_plan_ceiling[]
+  budg_commitment_plan_detail        budg_commitment_plan_detail[]
+  budg_fiscal_framework_paper        budg_fiscal_framework_paper[]
+  budg_forwarding_letter             budg_forwarding_letter[]
+  budg_gdp_data                      budg_gdp_data[]
+  budg_gdp_file                      budg_gdp_file[]
+  budg_head_budget_ceiling           budg_head_budget_ceiling[]
+  budg_key_achievement               budg_key_achievement[]
+  budg_key_challenge                 budg_key_challenge[]
+  budg_key_performance_indicator     budg_key_performance_indicator[]
+  budg_mt_policy_objective           budg_mt_policy_objective[]
+  budg_mtff_item                     budg_mtff_item[]
+  budg_output                        budg_output[]
+  budg_program_objective             budg_program_objective[]
+  budg_rc_budget_ceiling             budg_rc_budget_ceiling[]
+  budg_supplementary_budget          budg_supplementary_budget[]
+  budg_vehicle_plant_rule            budg_vehicle_plant_rule[]            @ignore
+  config_period                      config_period?                       @relation("config_periodToconfig_period", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "config_period_fk_01")
+  other_config_period                config_period[]                      @relation("config_periodToconfig_period")
+  hr_employee_salary                 hr_employee_salary[]
+
+  @@index([parent_id], map: "config_period_index_1")
+  @@index([end_date], map: "config_period_index_2")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_product_category {
+  id               String   @id @db.Uuid
+  state            Int
+  version          BigInt
+  description      String?  @db.VarChar(255)
+  name             String   @unique(map: "config_product_category_uk1") @db.VarChar(255)
+  is_default       Boolean?
+  measurement_unit String?  @db.VarChar(50)
+  code             String   @default("00") @db.VarChar(2)
+  comments         String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_supplier {
+  id                           String                         @id(map: "config_creditor_pkey") @db.Uuid
+  state                        Int
+  version                      BigInt
+  description                  String?                        @db.VarChar(255)
+  detailed_address             String?                        @db.VarChar(255)
+  email_address                String?                        @db.VarChar(255)
+  name                         String                         @db.VarChar(250)
+  phone_number                 String?                        @db.VarChar(255)
+  supplier_type                String                         @db.VarChar(255)
+  tin                          String?                        @db.VarChar(250)
+  comments                     String?
+  config_contract              config_contract[]
+  config_supplier_bank_account config_supplier_bank_account[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model config_supplier_bank_account {
+  id              String          @id @db.Uuid
+  state           Int
+  version         BigInt
+  account_name    String          @db.VarChar(255)
+  account_number  String          @db.VarChar(255)
+  bank_id         String?         @db.Uuid
+  currency_id     String          @db.Uuid
+  supplier_id     String          @db.Uuid
+  comments        String?
+  config_bank     config_bank?    @relation(fields: [bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk38s8r98wefg7xqkk9rcna059u")
+  config_supplier config_supplier @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk4ahnqgv576mx2f0rdx0gl7qnb")
+  config_currency config_currency @relation(fields: [currency_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkdhfsi8me42iypfmlasjd0ltjf")
+
+  @@unique([account_number, bank_id], map: "ukeggux0ipjj7ljekppdrtmhu02")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model document_type {
+  id           String  @id @db.Uuid
+  state        Int
+  version      BigInt
+  content_type String  @db.VarChar(15)
+  maximum_size BigInt
+  name         String  @unique(map: "document_type_uk1") @db.VarChar(15)
+  comments     String?
+
+  @@schema("public")
+}
+
+model flyway_schema_history {
+  installed_rank Int      @id(map: "flyway_schema_history_pk")
+  version        String?  @db.VarChar(50)
+  description    String   @db.VarChar(200)
+  type           String   @db.VarChar(20)
+  script         String   @db.VarChar(1000)
+  checksum       Int?
+  installed_by   String   @db.VarChar(100)
+  installed_on   DateTime @default(now()) @db.Timestamp(6)
+  execution_time Int
+  success        Boolean
+
+  @@index([success], map: "flyway_schema_history_s_idx")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model history_bo {
+  id                String    @id @db.Uuid
+  state             Int
+  version           BigInt
+  approval_date     DateTime? @db.Timestamp(6)
+  preparation_date  DateTime  @db.Timestamp(6)
+  review_date       DateTime? @db.Timestamp(6)
+  verification_date DateTime? @db.Timestamp(6)
+  approver_id       String?   @db.Uuid
+  preparer_id       String    @db.Uuid
+  reviewer_id       String?   @db.Uuid
+  verifier_id       String?   @db.Uuid
+  comments          String?
+
+  @@schema("public")
+}
+
+model hr_employee {
+  id                                                         String               @id @db.Uuid
+  identification_no                                          String?              @db.VarChar(20)
+  employee_no                                                String               @db.VarChar(20)
+  employee_names                                             String?              @db.VarChar(250)
+  employment_type                                            String?              @db.VarChar(20)
+  gender                                                     String?              @db.VarChar(10)
+  head_id                                                    String?              @db.Uuid
+  rc_id                                                      String?              @db.Uuid
+  post_number_id                                             String?              @db.Uuid
+  grade_notch_id                                             String?              @db.Uuid
+  comments                                                   String?
+  total_allowances                                           Decimal              @default(0) @db.Decimal(20, 0)
+  personnel_category                                         String?              @db.VarChar(50)
+  stop_date                                                  DateTime?            @db.Date
+  coa_administrative_hr_employee_head_idTocoa_administrative coa_administrative?  @relation("hr_employee_head_idTocoa_administrative", fields: [head_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_employee_fk1")
+  coa_administrative_hr_employee_rc_idTocoa_administrative   coa_administrative?  @relation("hr_employee_rc_idTocoa_administrative", fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_employee_fk2")
+  hr_grade_notch                                             hr_grade_notch?      @relation(fields: [grade_notch_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_employee_fk4")
+  hr_employee_salary                                         hr_employee_salary[]
+
+  @@schema("public")
+}
+
+model hr_employee_salary {
+  id                  String              @id @db.Uuid
+  employee_id         String              @db.Uuid
+  period_id           String              @db.Uuid
+  component_id        String              @db.Uuid
+  salary_type         String              @db.VarChar(20)
+  amount              Decimal             @db.Decimal(20, 0)
+  comments            String?
+  hr_employee         hr_employee         @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_employee_salary_fk1")
+  config_period       config_period       @relation(fields: [period_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_employee_salary_fk2")
+  hr_salary_component hr_salary_component @relation(fields: [component_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_employee_salary_fk3")
+
+  @@unique([employee_id, component_id], map: "hr_employee_salary_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model hr_grade {
+  id          String    @id(map: "hr_grade_pk") @db.Uuid
+  state       Int
+  version     BigInt
+  code        String    @db.VarChar(50)
+  name        String    @db.VarChar(255)
+  comments    String?
+  description String?   @db.VarChar(255)
+  grid_code   String?   @db.VarChar(50)
+  top_notch   Int       @default(5)
+  hr_post     hr_post[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model hr_grade_notch {
+  id            String        @id(map: "hr_grade_notch_pk") @db.Uuid
+  state         Int
+  version       BigInt
+  grade_id      String        @db.Uuid
+  notch         Int
+  annual_salary Decimal       @db.Decimal(20, 0)
+  comments      String?
+  hr_employee   hr_employee[]
+
+  @@unique([grade_id, notch], map: "hr_grade_notch_uk1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model hr_post {
+  id          String    @id(map: "hr_post_pk") @db.Uuid
+  state       Int?
+  version     BigInt?
+  code        String?   @db.VarChar(50)
+  name        String?   @db.VarChar(250)
+  description String?   @db.VarChar(250)
+  comments    String?
+  grade_id    String?   @db.Uuid
+  amount      Decimal?  @db.Decimal
+  hr_grade    hr_grade? @relation(fields: [grade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_post_fk1")
+
+  @@schema("public")
+}
+
+model hr_post_number {
+  id                                                            String              @id @db.Uuid
+  post_no                                                       String              @db.VarChar(50)
+  head_id                                                       String              @db.Uuid
+  rc_id                                                         String?             @db.Uuid
+  post_id                                                       String?             @db.Uuid
+  comments                                                      String?
+  post_indicator                                                String?             @db.VarChar(50)
+  post_status                                                   String?             @db.VarChar(50)
+  coa_administrative_hr_post_number_head_idTocoa_administrative coa_administrative  @relation("hr_post_number_head_idTocoa_administrative", fields: [head_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_post_number_fk1")
+  coa_administrative_hr_post_number_rc_idTocoa_administrative   coa_administrative? @relation("hr_post_number_rc_idTocoa_administrative", fields: [rc_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_post_number_fk2")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model hr_salary_component {
+  id                 String               @id @db.Uuid
+  state              Int
+  version            BigInt
+  code               String               @unique(map: "hr_salary_component_uk1") @db.VarChar(50)
+  name               String               @unique(map: "hr_salary_component_uk2") @db.VarChar(255)
+  description        String?              @db.VarChar(250)
+  salary_type        String               @db.VarChar(20)
+  increment_type     String               @db.VarChar(20)
+  economic_id        String               @db.Uuid
+  comments           String?
+  employment_type    String?              @db.VarChar(20)
+  hr_employee_salary hr_employee_salary[]
+  coa_economic       coa_economic         @relation(fields: [economic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "hr_salary_component_fk1")
+
+  @@schema("public")
+}
+
+model message_category {
+  id           Int            @id
+  code         String?        @db.VarChar(255)
+  name         String?        @db.VarChar(255)
+  comments     String?
+  user_message user_message[]
+
+  @@schema("public")
+}
+
+model message_type {
+  id           Int            @id
+  name         String         @db.VarChar(255)
+  comments     String?
+  user_message user_message[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model opr_operational_report {
+  id          String  @id @db.Uuid
+  state       Int
+  version     BigInt
+  code        String  @db.VarChar(255)
+  context     String  @db.VarChar(255)
+  description String  @db.VarChar(255)
+  exportable  Boolean
+  name        String  @db.VarChar(255)
+  orientation String  @db.VarChar(255)
+  printable   Boolean
+  comments    String? @db.VarChar
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model opr_report_column {
+  id                  String  @id @db.Uuid
+  state               Int
+  version             BigInt
+  aggregate_function  String? @db.VarChar(255)
+  background_color    String  @db.VarChar(255)
+  column_description  String  @db.VarChar(255)
+  column_name         String  @db.VarChar(255)
+  font_style          String  @db.VarChar(255)
+  fore_color          String  @db.VarChar(255)
+  position            Int
+  report_id           String  @db.Uuid
+  summary             Boolean
+  width               Float   @db.Real
+  summary_description String? @db.VarChar
+  comments            String? @db.VarChar
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model opr_report_filter {
+  id          String  @id @db.Uuid
+  state       Int
+  version     BigInt
+  column_name String  @db.VarChar(255)
+  operator    String  @db.VarChar(255)
+  report_id   String  @db.Uuid
+  comments    String? @db.VarChar
+
+  @@schema("public")
+}
+
+model reference_document {
+  filename     String    @id(map: "referencedocument_pkey") @db.VarChar(255)
+  basename     String?   @db.VarChar(255)
+  creationdate DateTime? @db.Timestamp(6)
+  creatorname  String?   @db.VarChar(255)
+  extension    String?   @db.VarChar(255)
+  filecontent  Bytes?
+  comments     String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model rpt_domain_report_component {
+  id                   String               @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  report_component_id  String               @db.Uuid
+  domain_component_id  String               @db.Uuid
+  comments             String?
+  state                Int                  @default(0)
+  version              BigInt               @default(0)
+  rpt_report_component rpt_report_component @relation(fields: [report_component_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "rpt_report_component_fk")
+
+  @@unique([report_component_id, domain_component_id], map: "rpt_report_component_economic_unique")
+  @@schema("public")
+}
+
+model rpt_report_component {
+  id                          String                        @id(map: "rpt_report_component_pk") @db.Uuid
+  type                        String                        @db.VarChar(30)
+  code                        String                        @unique(map: "rpt_report_component_code_unique") @db.VarChar(10)
+  name                        String                        @db.VarChar(80)
+  rpt_domain_report_component rpt_domain_report_component[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_menu_item {
+  id                  String          @id @db.Uuid
+  state               Int
+  version             BigInt
+  description         String?         @db.VarChar(255)
+  level               String          @db.VarChar(1)
+  name                String          @db.VarChar(50)
+  parent_id           String?         @db.Uuid
+  code                String?         @unique(map: "sec_menu_item_uk1") @db.VarChar(100)
+  comments            String?
+  sec_menu_item       sec_menu_item?  @relation("sec_menu_itemTosec_menu_item", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk7cq46mpp932l39x8op60o8yuv")
+  other_sec_menu_item sec_menu_item[] @relation("sec_menu_itemTosec_menu_item")
+  sec_role_menu       sec_role_menu[]
+
+  @@unique([level, name], map: "sec_menu_item_uk2")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_notification {
+  id                         String                       @id(map: "notification_pkey") @db.Uuid
+  state                      Int
+  version                    BigInt
+  body                       String?
+  receiver                   String?                      @db.VarChar(500)
+  creation_date              DateTime                     @db.Timestamp(6)
+  size                       String                       @db.VarChar(50)
+  title                      String                       @db.VarChar(500)
+  sender                     String?                      @db.VarChar(100)
+  type                       String                       @db.VarChar(255)
+  read                       Boolean                      @default(false)
+  comments                   String?
+  sec_notification_recipient sec_notification_recipient[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_notification_recipient {
+  id                                                                      String           @id(map: "notification_recipients_pkey") @db.Uuid
+  state                                                                   Int
+  version                                                                 BigInt
+  notification_id                                                         String           @db.Uuid
+  sender_id                                                               String           @db.Uuid
+  receiver_id                                                             String           @db.Uuid
+  read                                                                    Boolean          @default(false)
+  comments                                                                String?
+  sec_notification                                                        sec_notification @relation(fields: [notification_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk63hckqncmt4h9iea0092uao9b")
+  sec_system_user_sec_notification_recipient_sender_idTosec_system_user   sec_system_user  @relation("sec_notification_recipient_sender_idTosec_system_user", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkcfxdkja5qlc5n0wjdvpwa9cnq")
+  sec_system_user_sec_notification_recipient_receiver_idTosec_system_user sec_system_user  @relation("sec_notification_recipient_receiver_idTosec_system_user", fields: [receiver_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkg8bx420gvk2l2s07iexmabfoo")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_permission {
+  id                  String                @id @db.Uuid
+  state               Int
+  version             BigInt
+  alias_name          String                @db.VarChar(250)
+  description         String?               @db.VarChar(255)
+  name                String                @unique(map: "uk820njc06hnbad2iocijr5qla4") @db.VarChar(250)
+  comments            String?
+  sec_role_permission sec_role_permission[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_role {
+  id                   String                 @id @db.Uuid
+  state                Int
+  version              BigInt
+  code                 String                 @db.VarChar(3)
+  description          String?                @db.VarChar(255)
+  name                 String                 @db.VarChar(250)
+  comments             String?
+  sec_role_action      sec_role_action[]
+  sec_role_menu        sec_role_menu[]
+  sec_role_permission  sec_role_permission[]
+  sec_system_user_role sec_system_user_role[]
+
+  @@unique([code, name], map: "uk5310es9i5y5r51t7m0yo9qmg4")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_role_action {
+  id              String          @id @db.Uuid
+  state           Int
+  version         BigInt
+  action_id       String          @db.Uuid
+  role_id         String          @db.Uuid
+  comments        String?
+  sec_role        sec_role        @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkd57jimqko2s5ei1e17b4f5klb")
+  sec_user_action sec_user_action @relation(fields: [action_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkgwodgqcr0g5de2avh5lfs898k")
+
+  @@unique([role_id, action_id], map: "ukqfdtd7st2ewak7kqntgaeomyf")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_role_menu {
+  id            String        @id @db.Uuid
+  state         Int
+  version       BigInt
+  menu_id       String        @db.Uuid
+  role_id       String        @db.Uuid
+  comments      String?
+  sec_role      sec_role      @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkiyi0lesdyiqil3k4usb0tbes8")
+  sec_menu_item sec_menu_item @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkk30t9292gw3ff960aes0wkl4l")
+
+  @@unique([role_id, menu_id], map: "ukenij886lsai0pns7fgg5vlkyi")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_role_permission {
+  id             String         @id @db.Uuid
+  state          Int
+  version        BigInt
+  permission_id  String         @db.Uuid
+  role_id        String         @db.Uuid
+  comments       String?
+  sec_permission sec_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk3mv6m2regrdngqf9lg6jxmx1w")
+  sec_role       sec_role       @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkrt2j9buagqns3tums3igtau2o")
+
+  @@unique([role_id, permission_id], map: "ukea4cysdh3ecv394w7e4mpsgsw")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_system_user {
+  id                                                                                 String                             @id @db.Uuid
+  state                                                                              Int
+  version                                                                            BigInt
+  biography                                                                          String?                            @db.VarChar(255)
+  email_address                                                                      String?                            @db.VarChar(50)
+  first_name                                                                         String?                            @db.VarChar(50)
+  gender                                                                             String?                            @db.VarChar(10)
+  last_name                                                                          String?                            @db.VarChar(50)
+  national_id                                                                        String?                            @db.VarChar(16)
+  password                                                                           String                             @db.VarChar(250)
+  phone_number                                                                       String?                            @db.VarChar(50)
+  status                                                                             String?                            @db.VarChar(255)
+  user_id                                                                            String                             @db.VarChar(50)
+  user_image_id                                                                      String?                            @db.Uuid
+  position                                                                           String?                            @db.VarChar(255)
+  signature                                                                          Bytes?
+  user_type                                                                          String?                            @db.VarChar(50)
+  comments                                                                           String?
+  pwd_history                                                                        String?
+  institution                                                                        String?                            @db.VarChar(250)
+  otp                                                                                String?                            @db.VarChar(50)
+  otp_time                                                                           DateTime?                          @db.Timestamp(6)
+  budg_supplementary_budget_status                                                   budg_supplementary_budget_status[]
+  sec_notification_recipient_sec_notification_recipient_sender_idTosec_system_user   sec_notification_recipient[]       @relation("sec_notification_recipient_sender_idTosec_system_user")
+  sec_notification_recipient_sec_notification_recipient_receiver_idTosec_system_user sec_notification_recipient[]       @relation("sec_notification_recipient_receiver_idTosec_system_user")
+  sec_system_user_rc                                                                 sec_system_user_rc[]
+  sec_system_user_role                                                               sec_system_user_role[]
+  sec_user_preference                                                                sec_user_preference[]
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_system_user_rc {
+  id              String          @id @db.Uuid
+  state           Int
+  version         BigInt
+  rc_id           String          @db.Uuid
+  system_user_id  String          @db.Uuid
+  start_time      DateTime        @db.Timestamp(6)
+  end_time        DateTime?       @db.Timestamp(6)
+  role_id         String?         @db.Uuid
+  comments        String?
+  sec_system_user sec_system_user @relation(fields: [system_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sec_system_user_rc_fk_2")
+
+  @@unique([system_user_id, rc_id], map: "sec_system_user_rc_uk_1")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_system_user_role {
+  id              String          @id @db.Uuid
+  state           Int
+  version         BigInt
+  role_id         String          @db.Uuid
+  system_user_id  String          @db.Uuid
+  comments        String?
+  sec_role        sec_role        @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkhi1h6m4v7sgmab4fjye0y2xw3")
+  sec_system_user sec_system_user @relation(fields: [system_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkifjfoy2p78ibef2l6ysm2vv51")
+
+  @@unique([system_user_id, role_id], map: "ukd3nwv9t40eplymso28g0smeuc")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sec_user_action {
+  id              String            @id @db.Uuid
+  state           Int
+  version         BigInt
+  description     String?           @db.VarChar(255)
+  name            String            @unique(map: "uko4rodg5lqy29je2cchu2typmh") @db.VarChar(50)
+  comments        String?
+  sec_role_action sec_role_action[]
+
+  @@schema("public")
+}
+
+model sec_user_preference {
+  id              String          @id @db.Uuid
+  object_type     String          @db.VarChar(255)
+  object_value    String          @db.VarChar(255)
+  system_user_id  String          @db.Uuid
+  comments        String?
+  sec_system_user sec_system_user @relation(fields: [system_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkopgwoschyo3sjgj7l5calo48c")
+
+  @@unique([object_type, system_user_id], map: "uk92690hmkk851vyfmujls018dl")
+  @@schema("public")
+}
+
+model sequence_number {
+  id       String  @id @db.Uuid
+  sequence String  @db.VarChar(255)
+  type     String  @unique(map: "uk8n96lev6hv8j9jodpiulescnj") @db.VarChar(255)
+  comments String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model temp_grade {
+  id          String  @db.Uuid
+  state       Int
+  version     BigInt
+  code        String  @db.VarChar(50)
+  name        String  @db.VarChar(255)
+  comments    String?
+  description String? @db.VarChar(255)
+  grid_code   String? @db.VarChar(50)
+  top_notch   Int     @default(5)
+
+  @@ignore
+  @@schema("public")
+}
+
+model user_message {
+  id               Int              @id
+  local            BigInt
+  value            String?          @unique(map: "uk_i0xrhabw9cqhojqbuak4x17jj") @db.VarChar(255)
+  category         Int
+  type             Int?
+  comments         String?
+  message_category message_category @relation(fields: [category], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk321f4fotucr6hll59q2mfghx7")
+  message_type     message_type?    @relation(fields: [type], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fkgqi0xp9xyd3cy6xobx0stv0ph")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model wf_action {
+  id           String    @id @db.Uuid
+  created_date DateTime? @db.Timestamp(6)
+  state        Int
+  updated_date DateTime? @db.Timestamp(6)
+  version      BigInt
+  code         String    @unique(map: "wf_action_uk1") @db.VarChar(255)
+  description  String    @db.VarChar(255)
+  name         String    @unique(map: "wf_action_uk2") @db.VarChar(255)
+  comments     String?
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model wf_action_comment {
+  id               String           @id @db.Uuid
+  created_date     DateTime?        @db.Timestamp(6)
+  state            Int
+  updated_date     DateTime?        @db.Timestamp(6)
+  version          BigInt
+  comment          String
+  reference_id     String           @db.VarChar(255)
+  action_detail_id String           @db.Uuid
+  comments         String?
+  user_id          String?          @db.VarChar(100)
+  action_time      DateTime?        @db.Timestamp(6)
+  wf_action_detail wf_action_detail @relation(fields: [action_detail_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "wf_action_comment_fk1")
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model wf_action_detail {
+  id                           String                         @id @db.Uuid
+  created_date                 DateTime?                      @db.Timestamp(6)
+  state                        Int
+  updated_date                 DateTime?                      @db.Timestamp(6)
+  version                      BigInt
+  accounting_sens              String?                        @db.VarChar(255)
+  act_as_cancel                Boolean
+  act_as_reject                Boolean
+  description                  String                         @db.VarChar(255)
+  gl_integration               Boolean
+  icon                         String?                        @db.VarChar(255)
+  isdefaultone                 Boolean?
+  is_final                     Boolean?
+  level                        Int
+  message_required             Boolean
+  name                         String                         @db.VarChar(255)
+  require_editor               Boolean
+  status                       String                         @db.VarChar(255)
+  action                       String                         @db.Uuid
+  parent_id                    String?                        @db.Uuid
+  user_action_id               String?                        @db.Uuid
+  comments                     String?
+  next_action_detail_id        String?                        @db.Uuid
+  role_ids                     String?
+  budg_budget_call_circular    budg_budget_call_circular[]
+  budg_budget_release          budg_budget_release[]
+  budg_budget_sheet            budg_budget_sheet[]
+  budg_commitment_plan         budg_commitment_plan[]
+  budg_commitment_plan_ceiling budg_commitment_plan_ceiling[]
+  wf_action_comment            wf_action_comment[]
+
+  @@schema("public")
+}
+
+model users {
+  id         String   @id
+  firstname  String
+  lastname   String
+  username   String   @unique
+  email      String   @unique
+  password   String
+  department String[]
+  role       String
+  avatar     String?
+  status     String   @default("Active")
+
+  @@schema("user_schema_uts")
+}
+
+model faqs {
+  id       String @id
+  question String
+  answer   String
+
+  @@schema("uts")
+}
+
+model replies {
+  id          String   @id
+  ticketId    String
+  userId      String
+  detail      String
+  attachments String[]
+  date        DateTime @default(now())
+  tickets     tickets  @relation(fields: [ticketId], references: [id])
+
+  @@schema("uts")
+}
+
+model tickets {
+  id          String    @id
+  senderId    String
+  subject     String
+  detail      String
+  assignedTo  String[]
+  status      String    @default("Received")
+  date        DateTime  @default(now())
+  attachments String[]
+  department  String[]
+  shared      String[]
+  visibility  String    @default("Visible")
+  replies     replies[]
+
+  @@schema("uts")
+}

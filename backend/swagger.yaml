@@ -1,0 +1,469 @@
+openapi: 3.0.0
+info:
+  title: User Ticket System API
+  author: Honore Peter Joy Ndayishimiye
+  version: 1.0.0
+  description: Comprehensive API documentation for the User Ticket System | Prepared By Honore Peter Joy NDAYISHIMIYE
+
+servers:
+  - url: http://localhost:3100
+    description: Local server
+
+paths:
+
+  /api/users/login:
+    post:
+      tags:
+        - Users
+      summary: Login a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "peter.joy"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "Bearer eyJhbGciOiJIUzI1NiIs..."
+        '400':
+          description: Invalid credentials
+
+  /api/users/logout:
+    post:
+      tags:
+        - Users
+      summary: Logout a user
+      responses:
+        '200':
+          description: Logout successful
+
+  /api/tickets/create:
+    post:
+      tags:
+        - Tickets
+      summary: Create a new ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  example: "System Crash"
+                detail:
+                  type: string
+                  example: "System crashes on login."
+                department:
+                  type: array
+                  items:
+                    type: string
+                  example: ["COA", "Planning"]
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                visibility:
+                  type: string
+                  enum: [Visible, Hidden]
+                  example: "Visible"
+      responses:
+        '201':
+          description: Ticket created successfully
+        '401':
+          description: Unauthorized access
+
+  /api/tickets/update:
+    put:
+      tags:
+        - Tickets
+      summary: Update an existing ticket (only if status is RFI)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  example: "1a2b3c4d-5678-90ab-cdef-1234567890ab"
+                subject:
+                  type: string
+                  example: "Updated Ticket Subject"
+                detail:
+                  type: string
+                  example: "Updated details for the ticket."
+                department:
+                  type: array
+                  items:
+                    type: string
+                  example: ["COA", "Planning"]
+
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Ticket updated successfully
+        '403':
+          description: Update not allowed unless status is RFI
+        '400':
+          description: Failed to update ticket
+
+  /api/tickets/addUserToShared:
+    post:
+      tags:
+        - Tickets
+      summary: Add a user to the shared list of a ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  example: "1"
+                userId:
+                  type: string
+                  example: "4"
+      responses:
+        '200':
+          description: User added to shared list successfully
+        '400':
+          description: Failed to add user to shared list
+
+  /api/tickets/addUserToAssigned:
+    post:
+      tags:
+        - Tickets
+      summary: Add a user to the assigned list of a ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  example: "1"
+                userId:
+                  type: string
+                  example: "5"
+      responses:
+        '200':
+          description: User added to assigned list successfully
+        '400':
+          description: Failed to add user to assigned list
+
+  /api/tickets/changeStatus:
+    post:
+      tags:
+        - Tickets
+      summary: Change the status of a ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  example: "1"
+                status:
+                  type: string
+                  example: "Under Review"
+      responses:
+        '200':
+          description: Ticket status updated successfully
+        '400':
+          description: Failed to update ticket status
+
+  /api/tickets/revokeUserFromAssigned:
+    post:
+      tags:
+        - Tickets
+      summary: Revoke a user from the assigned list of a ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  example: 1
+                userId:
+                  type: string
+                  example: 5
+      responses:
+        '200':
+          description: User revoked from assigned list successfully
+        '400':
+          description: Failed to revoke user from assigned list
+
+  /api/tickets/revokeUserFromShared:
+    post:
+      tags:
+        - Tickets
+      summary: Revoke a user from the shared list of a ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  example: 1
+                userId:
+                  type: string
+                  example: 4
+      responses:
+        '200':
+          description: User revoked from shared list successfully
+        '400':
+          description: Failed to revoke user from shared list
+
+  /api/tickets/addReply:
+    post:
+      tags:
+        - Tickets
+      summary: Add a reply to a ticket
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: string
+                  example: "1a2b3c4d-5678-90ab-cdef-1234567890ab"
+                detail:
+                  type: string
+                  example: "Here is a reply to the ticket."
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Reply added successfully
+        '400':
+          description: Failed to add reply
+
+
+  /api/tickets/{ticketId}/replies:
+    get:
+      tags:
+        - Tickets
+      summary: Get replies for a specific ticket
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ticketId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 1
+      responses:
+        '200':
+          description: Replies retrieved successfully
+        '404':
+          description: No replies found
+        '401':
+          description: Unauthorized access
+
+  /api/tickets:
+    get:
+      tags:
+        - Tickets
+      summary: Get all tickets
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Tickets retrieved successfully
+        '404':
+          description: No tickets found
+        '401':
+          description: Unauthorized access
+
+  /api/tickets/updateReply:
+    put:
+      tags:
+        - Tickets
+      summary: Update an existing reply
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                replyId:
+                  type: string
+                  example: "1a2b3c4d-5678-90ab-cdef-1234567890ab"
+                detail:
+                  type: string
+                  example: "Updated reply content"
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Reply updated successfully
+        '404':
+          description: Reply not found
+        '400':
+          description: Failed to update reply
+
+  /api/faqs/create:
+    post:
+      tags:
+        - FAQs
+      summary: Create a new FAQ
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  example: "What is the refund policy?"
+                answer:
+                  type: string
+                  example: "Our refund policy is valid for 30 days."
+      responses:
+        '201':
+          description: FAQ created successfully
+        '400':
+          description: Failed to create FAQ
+
+  /api/faqs:
+    get:
+      tags:
+        - FAQs
+      summary: Get all FAQs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: FAQs retrieved successfully
+        '404':
+          description: No FAQs found
+
+  /api/faqs/update:
+    put:
+      tags:
+        - FAQs
+      summary: Update an existing FAQ
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: 1
+                question:
+                  type: string
+                  example: "Updated question"
+                answer:
+                  type: string
+                  example: "Updated answer"
+      responses:
+        '200':
+          description: FAQ updated successfully
+        '404':
+          description: FAQ not found
+        '400':
+          description: Failed to update FAQ
+
+  /api/faqs/delete:
+    delete:
+      tags:
+        - FAQs
+      summary: Delete an FAQ
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: 1
+      responses:
+        '200':
+          description: FAQ deleted successfully
+        '404':
+          description: FAQ not found
+        '400':
+          description: Failed to delete FAQ
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
