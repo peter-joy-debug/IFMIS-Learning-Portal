@@ -1,5 +1,5 @@
 import '@mantine/core/styles.css';
-
+import { useRouter } from 'next/router';
 import type { AppProps } from 'next/app';
 import { Notifications } from '@mantine/notifications';
 import Head from 'next/head';

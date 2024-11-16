@@ -92,51 +92,91 @@ const { v4: uuidv4 } = require('uuid'); // Import the UUID generator
 //   };
   
 
+// exports.createTicket = async (req, res) => {
+//     const { subject, detail, department,attachments } = req.body;
+//     const userID = req.user.id; // Extract user ID from the authenticated token
+
+//     console.log('User ID: ', userID);
+  
+//     try {
+//       // Check if user exists
+//       const attachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
+//       const userExists = await prisma.sec_system_user.findUnique({
+//         where: { id: userID }, // Adjust based on actual User model
+//       });
+  
+//       if (!userExists) {
+//         return res.status(400).json({
+//           message: 'User does not exist. Cannot create ticket.',
+//         });
+//       }
+  
+//       const ticket = await prisma.tickets.create({
+//         data: {
+//           id: uuidv4(), // Generate a unique UUID for the reply
+//           senderId:userID, // UUID from token
+//           subject,
+//           detail,
+//           department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
+//           attachments, // Default to an empty array if undefined
+//         //   shared: shared ? shared : [], // Expect UUIDs directly
+//         },
+//       });
+  
+//       res.status(201).json({
+//         message: 'Ticket created successfully',
+//         ticket,
+//       });
+//     } catch (err) {
+//       res.status(400).json({
+//         message: 'Failed to create ticket',
+//         error: err.message,
+//       });
+//     }
+//   };
+
 exports.createTicket = async (req, res) => {
-    const { subject, detail, department, assignedTo, attachments, shared, visibility } = req.body;
-    const userID = req.user.id; // Extract user ID from the authenticated token
-  
-    console.log("User ID: ", userID);
-  
-    try {
-      // Check if user exists
-      const attachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-      const userExists = await prisma.sec_system_user.findUnique({
-        where: { id: userID }, // Adjust based on actual User model
-      });
-  
-      if (!userExists) {
-        return res.status(400).json({
-          message: 'User does not exist. Cannot create ticket.',
-        });
-      }
-  
-      const ticket = await prisma.tickets.create({
-        data: {
-          id: uuidv4(), // Generate a unique UUID for the reply
-          senderId:userID, // UUID from token
-          subject,
-          detail,
-          department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
-          assignedTo: assignedTo ? assignedTo : [], // Expect UUIDs directly
-          attachments, // Default to an empty array if undefined
-        //   shared: shared ? shared : [], // Expect UUIDs directly
-          shared: shared ? shared.map(String) : [], // Ensure shared is an array of strings
-          visibility,
-        },
-      });
-  
-      res.status(201).json({
-        message: 'Ticket created successfully',
-        ticket,
-      });
-    } catch (err) {
-      res.status(400).json({
-        message: 'Failed to create ticket',
-        error: err.message,
+  const { subject, detail, department } = req.body;
+  const userID = req.user.id; // Extract user ID from the authenticated token
+
+  console.log('User ID: ', userID);
+
+  try {
+    // Check if user exists
+    const attachmentPaths = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
+    const userExists = await prisma.sec_system_user.findUnique({
+      where: { id: userID }, // Adjust based on actual User model
+    });
+
+    if (!userExists) {
+      return res.status(400).json({
+        message: 'User does not exist. Cannot create ticket.',
       });
     }
-  };
+
+    const ticket = await prisma.tickets.create({
+      data: {
+        id: uuidv4(), // Generate a unique UUID for the ticket
+        senderId: userID, // UUID from token
+        subject,
+        detail,
+        department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
+        attachments: attachmentPaths, // Default to an empty array if undefined
+      },
+    });
+
+    res.status(201).json({
+      message: 'Ticket created successfully',
+      ticket,
+    });
+  } catch (err) {
+    console.error('Error creating ticket:', err); // Log detailed error for debugging
+    res.status(400).json({
+      message: 'Failed to create ticket',
+      error: err.message,
+    });
+  }
+};
   
 
 // exports.addUserToShared = async (req, res) => {
