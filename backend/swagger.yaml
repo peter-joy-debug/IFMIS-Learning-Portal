@@ -251,6 +251,7 @@ paths:
         '400':
           description: Failed to update ticket status
 
+
   /api/tickets/revokeUserFromAssigned:
     post:
       tags:
@@ -334,6 +335,57 @@ paths:
         '400':
           description: Failed to add reply
 
+  /api/tickets/user:
+    get:
+      tags:
+        - Tickets
+      summary: Retrieve tickets for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Tickets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tickets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "1a2b3c4d-5678-90ab-cdef-1234567890ab"
+                        subject:
+                          type: string
+                          example: "System Crash"
+                        detail:
+                          type: string
+                          example: "System crashes on login."
+                        senderId:
+                          type: string
+                          example: "user123"
+                        status:
+                          type: string
+                          example: "Open"
+                        shared:
+                          type: array
+                          items:
+                            type: string
+                          example: ["user456", "user789"]
+                        assigned:
+                          type: array
+                          items:
+                            type: string
+                          example: ["user101"]
+        '404':
+          description: No tickets found
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Failed to retrieve tickets
 
   /api/tickets/{ticketId}/replies:
     get:
@@ -499,6 +551,127 @@ paths:
           description: FAQ not found
         '400':
           description: Failed to delete FAQ
+          
+  /api/tickets/files:
+    get:
+      tags:
+        - Files
+      summary: Retrieve all files or files by type
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileType
+          in: query
+          description: Filter files by their MIME type (e.g., "image/png", "application/pdf").
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Files retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "64f7c2a5b9a77b0012f7da3c"
+                        filename:
+                          type: string
+                          example: "example.pdf"
+                        contentType:
+                          type: string
+                          example: "application/pdf"
+                        uploadDate:
+                          type: string
+                          format: date-time
+        '404':
+          description: No files found
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Server error
+
+    delete:
+      tags:
+        - Files
+      summary: Delete all files or files by type
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileType
+          in: query
+          description: Filter files to delete by their MIME type (e.g., "image/png", "application/pdf").
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Files deleted successfully
+        '404':
+          description: No files found to delete
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Server error
+
+  /api/tickets/files/{fileId}:
+    get:
+      tags:
+        - Files
+      summary: Download a file by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          description: The ID of the file to download
+          schema:
+            type: string
+            example: "64f7c2a5b9a77b0012f7da3c"
+      responses:
+        '200':
+          description: File downloaded successfully
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: File not found
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Server error
+
+    delete:
+      tags:
+        - Files
+      summary: Delete a file by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          description: The ID of the file to delete
+          schema:
+            type: string
+            example: "64f7c2a5b9a77b0012f7da3c"
+      responses:
+        '200':
+          description: File deleted successfully
+        '404':
+          description: File not found
+        '401':
+          description: Unauthorized access
+        '500':
+          description: Server error
 
 components:
   securitySchemes:

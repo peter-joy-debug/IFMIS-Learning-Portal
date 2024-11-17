@@ -5,6 +5,7 @@ import { Notifications } from '@mantine/notifications';
 import Head from 'next/head';
 import { MantineProvider } from '@mantine/core';
 import { theme } from '../theme';
+import { ModalsProvider } from '@mantine/modals';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -18,7 +19,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="shortcut icon" href="/favicon.svg" />
       </Head>
       <Notifications />
+      <ModalsProvider>
       <Component {...pageProps} />
+      </ModalsProvider>
     </MantineProvider>
   );
 }

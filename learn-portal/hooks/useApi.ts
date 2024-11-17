@@ -156,6 +156,15 @@ export const useApi = <T>(pollingInterval?: number) => {
     }
   }, [pollingInterval, fetchData]);
 
+  // useEffect(() => {
+  //   if (pollingInterval) {
+  //     const interval = setInterval(() => {
+  //       fetchData({ method: 'GET', url: '/tickets/user'});
+  //     }, pollingInterval);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [pollingInterval, fetchData]);
+
   return { data, loading, error, fetchData };
 };
 

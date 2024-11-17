@@ -113,9 +113,21 @@ api.interceptors.response.use(
 export const userRoutes = {
   register: (data: any) => api.post('/users/register', data),
   login: (data: any) => api.post('/users/login', data),
-  logout: () => api.post('/users/logout'),
-  getAllUsers: () => api.get('/users/'),
-  getUserById: (id: string) => api.get(`/users/${id}`),
+  logout: () => api.post('/users/logout', {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  getAllUsers: () => api.get('/users/', {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  getUserById: (id: string) => api.get(`/users/${id}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
 };
 
 // // Ticket Routes
@@ -143,26 +155,102 @@ export const ticketRoutes = {
         Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
       },
     }),
-  addUserToShared: (data: any) => api.post('/tickets/addUserToShared', data),
-  addUserToAssigned: (data: any) => api.post('/tickets/addUserToAssigned', data),
-  changeTicketStatus: (data: any) => api.post('/tickets/changeStatus', data),
-  revokeUserFromAssigned: (data: any) => api.post('/tickets/revokeUserFromAssigned', data),
-  revokeUserFromShared: (data: any) => api.post('/tickets/revokeUserFromShared', data),
-  addReply: (data: any) => api.post('/tickets/addReply', data),
-  updateReply: (data: any) => api.put('/tickets/updateReply', data),
-  updateTicket: (data: any) => api.put('/tickets/update', data),
-  getAllTickets: () => api.get('/tickets/'),
-  getTicketById: (ticketId: string) => api.get(`/tickets/${ticketId}`),
-  getRepliesByTicket: (ticketId: string) => api.get(`/tickets/${ticketId}/replies`),
+    getTicketsByUser: () =>
+      api.get('/tickets/user',{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+        },
+      }),
+    addReply: (data: FormData) =>
+      api.post('/tickets/addReply', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+        },
+      }),
+    updateReply: (data: FormData) =>
+        api.put('/tickets/updateReply', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+          },
+      }),
+      updateTicket: (data: FormData) =>
+        api.put('/tickets/update', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+          },
+    }),
+  addUserToShared: (data: any) => api.post('/tickets/addUserToShared', data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  addUserToAssigned: (data: any) => api.post('/tickets/addUserToAssigned', data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  changeTicketStatus: (data: any) => api.post('/tickets/changeStatus', data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  revokeUserFromAssigned: (data: any) => api.post('/tickets/revokeUserFromAssigned', data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  revokeUserFromShared: (data: any) => api.post('/tickets/revokeUserFromShared', data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  // addReply: (data: any) => api.post('/tickets/addReply', data),
+  // updateReply: (data: any) => api.put('/tickets/updateReply', data),
+  // updateTicket: (data: any) => api.put('/tickets/update', data),
+  getAllTickets: () => api.get('/tickets/', {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  getTicketById: (ticketId: string) => api.get(`/tickets/${ticketId}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  getRepliesByTicket: (ticketId: string) => api.get(`/tickets/${ticketId}/replies`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+getFileById: (fileId: string) => api.get(`/tickets/files/${fileId}`, {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+  },
+}),
 };
 
 
 // FAQ Routes
 export const faqRoutes = {
-  createFAQ: (data: any) => api.post('/faqs/create', data),
+  createFAQ: (data: any) => api.post('/faqs/create', data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
   getFAQs: () => api.get('/faqs/'),
-  updateFAQ: (data: any) => api.put('/faqs/update', data),
-  deleteFAQ: (data: any) => api.delete('/faqs/delete', { data }),
+  updateFAQ: (data: any) => api.put('/faqs/update', data, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+}),
+  deleteFAQ: (data: any) => api.delete('/faqs/delete', {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token in the header
+    },
+ } ),
 };
 
 export default api;

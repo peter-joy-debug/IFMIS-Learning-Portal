@@ -1,50 +1,36 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Import the UUID generator
+const { saveFileToGridFS, getFileStream, deleteFile, waitForBucket,findFile, findFilesByType, findFilesByTypeDelete } = require('../middleware/upload');
+const mongoose = require('mongoose'); // Add this line
+
 // exports.createTicket = async (req, res) => {
-//   const { subject, detail, department, assignedTo, attachments, shared, visibility } = req.body;
-//   const userId = req.user.id;
+//   const { subject, detail, department } = req.body;
+//   const userID = req.user.id; // Extract user ID from the authenticated token
+
+//   console.log('User ID: ', userID);
 
 //   try {
-//     const ticket = await prisma.ticket.create({
-//       data: {
-//         senderId: userId,
-//         subject,
-//         detail,
-//         department,
-//         assignedTo,
-//         attachments,
-//         shared,
-//         visibility,
-//       },
+//     // Check if user exists
+//     const attachmentPaths = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
+//     const userExists = await prisma.sec_system_user.findUnique({
+//       where: { id: userID }, // Adjust based on actual User model
 //     });
-//     res.status(201).json({
-//         message: 'Ticket created successfully',
-//         ticket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to create ticket',
-//         error: err.message,
+
+//     if (!userExists) {
+//       return res.status(400).json({
+//         message: 'User does not exist. Cannot create ticket.',
 //       });
 //     }
-// };
 
-// exports.createTicket = async (req, res) => {
-//   const { subject, detail, department, assignedTo, attachments, shared, visibility } = req.body;
-//   const userId = req.user.id; // Assuming user ID is from the authenticated token
-
-//   try {
-//     const ticket = await prisma.ticket.create({
+//     const ticket = await prisma.tickets.create({
 //       data: {
-//         senderId: userId,
+//         id: uuidv4(), // Generate a unique UUID for the ticket
+//         senderId: userID, // UUID from token
 //         subject,
 //         detail,
 //         department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
-//         assignedTo: assignedTo ? assignedTo.map(Number) : [], // Convert assignedTo to an array of integers
-//         attachments: attachments || [], // Default to an empty array if undefined
-//         shared: shared ? shared.map(Number) : [], // Convert shared to an array of integers
-//         visibility,
+//         attachments: attachmentPaths, // Default to an empty array if undefined
 //       },
 //     });
 
@@ -53,6 +39,7 @@ const { v4: uuidv4 } = require('uuid'); // Import the UUID generator
 //       ticket,
 //     });
 //   } catch (err) {
+//     console.error('Error creating ticket:', err); // Log detailed error for debugging
 //     res.status(400).json({
 //       message: 'Failed to create ticket',
 //       error: err.message,
@@ -61,148 +48,536 @@ const { v4: uuidv4 } = require('uuid'); // Import the UUID generator
 // };
 
 // exports.createTicket = async (req, res) => {
-//     const { subject, detail, department, assignedTo, attachments, shared, visibility } = req.body;
-//     const userID = req.user.id; // Assuming user ID is a UUID from the authenticated token
-//     console.log("ID: ",userID);
-    
-//     try {
-//       const ticket = await prisma.ticket.create({
-//         data: {
-//           senderId: userID, // UUID from token
-//           subject,
-//           detail,
-//           department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
-//           assignedTo: assignedTo ? assignedTo : [], // Expect UUIDs directly
-//           attachments: attachments || [], // Default to an empty array if undefined
-//           shared: shared ? shared : [], // Expect UUIDs directly
-//           visibility,
-//         },
-//       });
-  
-//       res.status(201).json({
-//         message: 'Ticket created successfully',
-//         ticket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to create ticket',
-//         error: err.message,
-//       });
-//     }
-//   };
-  
+//   const { subject, detail, department } = req.body;
+//   const userID = req.user.id;
 
-// exports.createTicket = async (req, res) => {
-//     const { subject, detail, department,attachments } = req.body;
-//     const userID = req.user.id; // Extract user ID from the authenticated token
-
-//     console.log('User ID: ', userID);
-  
-//     try {
-//       // Check if user exists
-//       const attachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-//       const userExists = await prisma.sec_system_user.findUnique({
-//         where: { id: userID }, // Adjust based on actual User model
-//       });
-  
-//       if (!userExists) {
-//         return res.status(400).json({
-//           message: 'User does not exist. Cannot create ticket.',
-//         });
+//   try {
+//     const attachments = [];
+//     if (req.files) {
+//       for (const file of req.files) {
+//         const savedFile = await saveFileToGridFS(file);
+//         attachments.push(savedFile._id);
 //       }
-  
-//       const ticket = await prisma.tickets.create({
-//         data: {
-//           id: uuidv4(), // Generate a unique UUID for the reply
-//           senderId:userID, // UUID from token
-//           subject,
-//           detail,
-//           department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
-//           attachments, // Default to an empty array if undefined
-//         //   shared: shared ? shared : [], // Expect UUIDs directly
-//         },
-//       });
-  
-//       res.status(201).json({
-//         message: 'Ticket created successfully',
-//         ticket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to create ticket',
-//         error: err.message,
-//       });
 //     }
-//   };
 
+//     const ticket = await prisma.tickets.create({
+//       data: {
+//         id: uuidv4(),
+//         senderId: userID,
+//         subject,
+//         detail,
+//         department: Array.isArray(department) ? department : department.split(','),
+//         attachments, // Store attachment IDs
+//       },
+//     });
+
+//     res.status(201).json({
+//       message: 'Ticket created successfully',
+//       ticket,
+//     });
+//   } catch (err) {
+//     console.error('Error creating ticket:', err);
+//     res.status(400).json({
+//       message: 'Failed to create ticket',
+//       error: err.message,
+//     });
+//   }
+// };
+
+// Create Ticket with File Upload
 exports.createTicket = async (req, res) => {
   const { subject, detail, department } = req.body;
-  const userID = req.user.id; // Extract user ID from the authenticated token
-
-  console.log('User ID: ', userID);
+  const userID = req.user.id;
 
   try {
-    // Check if user exists
-    const attachmentPaths = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
     const userExists = await prisma.sec_system_user.findUnique({
-      where: { id: userID }, // Adjust based on actual User model
+      where: { id: userID },
     });
 
     if (!userExists) {
-      return res.status(400).json({
-        message: 'User does not exist. Cannot create ticket.',
-      });
+      return res.status(400).json({ message: 'User does not exist' });
+    }
+
+    const attachments = [];
+    if (req.files) {
+      for (const file of req.files) {
+        const fileId = await saveFileToGridFS(file);
+        attachments.push(fileId);
+      }
     }
 
     const ticket = await prisma.tickets.create({
       data: {
-        id: uuidv4(), // Generate a unique UUID for the ticket
-        senderId: userID, // UUID from token
+        id: uuidv4(),
+        senderId: userID,
         subject,
         detail,
-        department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
-        attachments: attachmentPaths, // Default to an empty array if undefined
+        department: Array.isArray(department) ? department : department.split(','),
+        attachments,
       },
     });
 
-    res.status(201).json({
-      message: 'Ticket created successfully',
-      ticket,
-    });
+    res.status(201).json({ message: 'Ticket created successfully', ticket });
   } catch (err) {
-    console.error('Error creating ticket:', err); // Log detailed error for debugging
-    res.status(400).json({
-      message: 'Failed to create ticket',
-      error: err.message,
-    });
+    res.status(400).json({ message: 'Failed to create ticket', error: err.message });
   }
 };
+
+// // Serve File
+// exports.getFile = async (req, res) => {
+//   try {
+//     const fileStream = getFileStream(req.params.fileId);
+//     fileStream.pipe(res);
+//   } catch (err) {
+//     res.status(404).json({ message: 'File not found' });
+//   }
+// };
   
 
-// exports.addUserToShared = async (req, res) => {
-//     const { ticketId, userId } = req.body;
-  
-//     try {
-//       const ticket = await prisma.ticket.update({
-//         where: { id: ticketId },
-//         data: {
-//           shared: {
-//             push: userId, // Adds userId to the shared array
-//           },
-//         },
+// exports.getFile = async (req, res) => {
+//   try {
+//     const fileId = req.params.fileId;
+
+//     // Validate ObjectId
+//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
+//       return res.status(400).json({ message: 'Invalid file ID' });
+//     }
+
+//     const fileStream = getFileStream(fileId);
+
+//     fileStream.on('error', (error) => {
+//       console.error('Stream error:', error);
+//       return res.status(404).json({ message: 'File not found' });
+//     });
+
+//     res.set({
+//       'Content-Disposition': `attachment; filename="${fileId}"`,
+//     });
+
+//     fileStream.pipe(res);
+//   } catch (err) {
+//     console.error('Error retrieving file:', err);
+//     res.status(500).json({ message: 'Failed to retrieve file' });
+//   }
+// };
+
+// exports.getFile = async (req, res) => {
+//   try {
+//     const fileId = req.params.fileId;
+
+//     // Validate ObjectId
+//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
+//       return res.status(400).json({ message: 'Invalid file ID' });
+//     }
+
+//     await waitForBucket(); // Ensure GridFSBucket is ready
+
+//     const files = await gfsBucket.find({ _id: new mongoose.Types.ObjectId(fileId) }).toArray();
+
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({ message: 'File not found' });
+//     }
+
+//     const fileMeta = files[0];
+
+//     res.set({
+//       'Content-Disposition': `attachment; filename="${fileMeta.filename}"`,
+//       'Content-Type': fileMeta.contentType,
+//     });
+
+//     const fileStream = await getFileStream(fileId);
+
+//     fileStream.on('error', (error) => {
+//       console.error('Stream error:', error);
+//       res.status(404).json({ message: 'File not found' });
+//     });
+
+//     fileStream.pipe(res);
+//   } catch (err) {
+//     console.error('Error retrieving file:', err);
+//     res.status(500).json({ message: 'Failed to retrieve file' });
+//   }
+// };
+
+// exports.getFile = async (req, res) => {
+//   try {
+//     console.log("REACHED 1");
+    
+//     const fileId = req.params.fileId;
+//     console.log("FILE ID: ",fileId);
+    
+//     // Validate ObjectId
+//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
+//       return res.status(400).json({ message: 'Invalid file ID' });
+//     }
+
+//     const files = await findFile(fileId);
+
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({ message: 'File not found' });
+//     }
+
+//     const fileMeta = files[0];
+
+//     // res.set({
+//       // 'Content-Disposition': `attachment; filename="${fileMeta.filename}"`,
+//       // 'Content-Type': fileMeta.contentType,
+//       // 'Content-Length':fileMeta.length,
+//       // 'Upload-Date':fileMeta.uploadDate
+//     // });
+
+
+
+//     const fileStream = await getFileStream(fileId);
+//     res.set({
+//       'Content-Disposition': `attachment; filename="${fileMeta.filename}"`,
+//       'Content-Type': fileMeta.contentType,
+//       'Content-Length':fileMeta.length,
+//       'Upload-Date':fileMeta.uploadDate
+//     });
+//     const buffer = [];
+//     fileStream.on('data', (chunk) => buffer.push(chunk));
+//     fileStream.on('end', () => {
+//       const base64Data = Buffer.concat(buffer).toString('base64');
+//       res.json({
+//         filename: fileMeta.filename,
+//         contentType: fileMeta.contentType,
+//         base64Data,
 //       });
-  
-//       res.status(200).json({
-//         message: 'User added to shared successfully',
-//         ticket,
+//     });
+
+//     fileStream.on('error', (error) => {
+//       console.error('Stream error:', error);
+//       res.status(404).json({ message: 'File not found' });
+//     });
+
+//     fileStream.pipe(res);
+//   } catch (err) {
+//     console.error('Error retrieving file:', err);
+//     res.status(500).json({ message: 'Failed to retrieve file' });
+//   }
+// };
+
+exports.getFile = async (req, res) => {
+  try {
+    console.log("REACHED 1");
+
+    const fileId = req.params.fileId;
+    console.log("FILE ID: ", fileId);
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(fileId)) {
+      return res.status(400).json({ message: 'Invalid file ID' });
+    }
+
+    const files = await findFile(fileId);
+
+    if (!files || files.length === 0) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+
+    const fileMeta = files[0];
+    const fileStream = await getFileStream(fileId);
+
+    const buffer = [];
+    fileStream.on('data', (chunk) => buffer.push(chunk));
+    fileStream.on('end', () => {
+      const base64Data = Buffer.concat(buffer).toString('base64');
+      res.status(200).json({
+        filename: fileMeta.filename,
+        contentType: fileMeta.contentType,
+        base64Data, // Send the file as a base64-encoded string
+      });
+    });
+
+    fileStream.on('error', (error) => {
+      console.error('Stream error:', error);
+      res.status(500).json({ message: 'Error reading file stream' });
+    });
+
+  } catch (err) {
+    console.error('Error retrieving file:', err);
+    res.status(500).json({ message: 'Failed to retrieve file' });
+  }
+};
+
+
+
+exports.getAllFiles = async (req, res) => {
+  try {
+    const { fileType } = req.query; // Retrieve fileType from query params
+    const files = await findFilesByType(fileType); 
+
+    if (!files || files.length === 0) {
+      return res.status(404).json({ message: 'No files found' });
+    }
+
+    const fileList = files.map((file) => ({
+      id: file._id,
+      filename: file.filename,
+      contentType: file.contentType,
+      uploadDate: file.uploadDate,
+    }));
+
+    res.status(200).json({
+      message: 'Files retrieved successfully',
+      files: fileList,
+    });
+  } catch (err) {
+    console.error('Error retrieving files:', err);
+    res.status(500).json({ message: 'Failed to retrieve files' });
+  }
+};
+
+// exports.deleteFiles = async (req, res) => {
+//   try {
+//     const { fileType } = req.query; // Get fileType from query params
+//     const files = await findFilesByTypeDelete(fileType);
+
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({ message: 'No files found' });
+//     }
+
+//     for (const file of files) {
+//       await deleteFile(file._id);
+
+//       // Remove file references from tickets and replies
+//       await prisma.tickets.updateMany({
+//         where: { attachments: { has: file._id.toString() } },
+//         data: { attachments: { set: { _id: file._id.toString() } } },
 //       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to add user to shared',
-//         error: err.message,
+//       await prisma.replies.updateMany({
+//         where: { attachments: { has: file._id.toString() } },
+//         data: { attachments: { set: { _id: file._id.toString() } } },
 //       });
 //     }
-//   };
+
+//     res.status(200).json({ message: `Deleted ${files.length} files successfully` });
+//   } catch (err) {
+//     console.error('Error deleting files:', err);
+//     res.status(500).json({ message: 'Failed to delete files' });
+//   }
+// };
+
+
+exports.deleteFiles = async (req, res) => {
+  try {
+    const { fileType } = req.query; // Get fileType from query params
+    const files = await findFilesByTypeDelete(fileType); // Get files based on type or all if no type
+
+    if (!files || files.length === 0) {
+      return res.status(404).json({ message: 'No files found' });
+    }
+
+    for (const file of files) {
+      // Delete the file from GridFS
+      await deleteFile(file._id);
+
+      // Remove the file references from tickets
+      const ticketsToUpdate = await prisma.tickets.findMany({
+        where: { attachments: { has: file._id.toString() } },
+      });
+
+      for (const ticket of ticketsToUpdate) {
+        const updatedAttachments = ticket.attachments.filter((id) => id !== file._id.toString());
+        await prisma.tickets.update({
+          where: { id: ticket.id },
+          data: { attachments: { set: updatedAttachments } },
+        });
+      }
+
+      // Remove the file references from replies
+      const repliesToUpdate = await prisma.replies.findMany({
+        where: { attachments: { has: file._id.toString() } },
+      });
+
+      for (const reply of repliesToUpdate) {
+        const updatedAttachments = reply.attachments.filter((id) => id !== file._id.toString());
+        await prisma.replies.update({
+          where: { id: reply.id },
+          data: { attachments: { set: updatedAttachments } },
+        });
+      }
+    }
+
+    res.status(200).json({ message: `Deleted ${files.length} files successfully` });
+  } catch (err) {
+    console.error('Error deleting files:', err);
+    res.status(500).json({ message: 'Failed to delete files' });
+  }
+};
+
+
+
+// exports.deleteFileById = async (req, res) => {
+//   try {
+//     const fileId = req.params.fileId;
+
+//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
+//       return res.status(400).json({ message: 'Invalid file ID' });
+//     }
+
+//     const files = await findFilesByTypeDelete(null, fileId);
+
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({ message: 'File not found' });
+//     }
+
+//     await deleteFile(fileId);
+
+//     // Remove file references from tickets and replies
+//     await prisma.tickets.updateMany({
+//       where: { attachments: { has: fileId } },
+//       data: { attachments: { set: { _id: file._id.toString() } } },
+//     });
+//     await prisma.replies.updateMany({
+//       where: { attachments: { has: fileId } },
+//       data: { attachments: { set: { _id: file._id.toString() } } },
+//     });
+
+//     res.status(200).json({ message: 'File deleted successfully' });
+//   } catch (err) {
+//     console.error('Error deleting file:', err);
+//     res.status(500).json({ message: 'Failed to delete file' });
+//   }
+// };
+
+// exports.deleteFileById = async (req, res) => {
+//   try {
+//     const fileId = req.params.fileId;
+
+//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
+//       return res.status(400).json({ message: 'Invalid file ID' });
+//     }
+
+//     const files = await findFilesByType(null, fileId);
+
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({ message: 'File not found' });
+//     }
+
+//     // Delete file from GridFS
+//     await deleteFile(fileId);
+
+//     // Remove file references from tickets and replies
+//     await prisma.tickets.updateMany({
+//       where: { attachments: { has: fileId } },
+//       data: {
+//         attachments: {
+//           set: {
+//             attachments: [],
+//           },
+//         },
+//       },
+//     });
+
+//     await prisma.replies.updateMany({
+//       where: { attachments: { has: fileId } },
+//       data: {
+//         attachments: {
+//           set: {
+//             attachments: [],
+//           },
+//         },
+//       },
+//     });
+
+//     res.status(200).json({ message: 'File deleted successfully' });
+//   } catch (err) {
+//     console.error('Error deleting file:', err);
+//     res.status(500).json({ message: 'Failed to delete file' });
+//   }
+// };
+
+// exports.deleteFileById = async (req, res) => {
+//   try {
+//     const { fileId } = req.params;
+
+//     // Validate ObjectId
+//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
+//       return res.status(400).json({ message: 'Invalid file ID' });
+//     }
+
+//     console.log("PARSED ID:",fileId);
+    
+//     // Check if file exists before deletion
+//     const file = await findFile(fileId);
+
+//     if (!file || file.length === 0) {
+//       return res.status(404).json({ message: 'File not found' });
+//     }
+
+//     await deleteFile(fileId); // Delete the file
+
+//     // Remove references to the file in `tickets` and `replies`
+//     await prisma.tickets.updateMany({
+//       where: { attachments: { has: fileId } },
+//       data: { attachments: { set: [] } },
+//     });
+
+//     await prisma.replies.updateMany({
+//       where: { attachments: { has: fileId } },
+//       data: { attachments: { set: [] } },
+//     });
+
+//     res.status(200).json({ message: 'File deleted successfully' });
+//   } catch (err) {
+//     console.error('Error deleting file:', err);
+//     res.status(500).json({ message: 'Failed to delete file' });
+//   }
+// };
+exports.deleteFileById = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(fileId)) {
+      return res.status(400).json({ message: 'Invalid file ID' });
+    }
+
+    // Check if the file exists
+    const file = await findFile(fileId);
+
+    if (!file || file.length === 0) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+
+    // Proceed with deletion
+    await deleteFile(fileId);
+
+// Update tickets to remove the specific fileId
+const ticketsToUpdate = await prisma.tickets.findMany({
+  where: { attachments: { has: fileId } },
+});
+
+for (const ticket of ticketsToUpdate) {
+  const updatedAttachments = ticket.attachments.filter((id) => id !== fileId);
+  await prisma.tickets.update({
+    where: { id: ticket.id },
+    data: { attachments: { set: updatedAttachments } }, // Use set with the updated array
+  });
+}
+
+// Update replies to remove the specific fileId
+const repliesToUpdate = await prisma.replies.findMany({
+  where: { attachments: { has: fileId } },
+});
+
+for (const reply of repliesToUpdate) {
+  const updatedAttachments = reply.attachments.filter((id) => id !== fileId);
+  await prisma.replies.update({
+    where: { id: reply.id },
+    data: { attachments: { set: updatedAttachments } }, // Use set with the updated array
+  });
+}
+
+    res.status(200).json({ message: 'File deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting file:', err);
+    res.status(500).json({ message: 'Failed to delete file' });
+  }
+};
+
 
 exports.addUserToShared = async (req, res) => {
     const { ticketId, userId } = req.body;
@@ -247,31 +622,7 @@ exports.addUserToShared = async (req, res) => {
     }
   };
   
-  
-//   exports.addUserToAssigned = async (req, res) => {
-//     const { ticketId, userId } = req.body;
-  
-//     try {
-//       const ticket = await prisma.ticket.update({
-//         where: { id: ticketId },
-//         data: {
-//           assignedTo: {
-//             push: userId, // Adds userId to the assignedTo array
-//           },
-//         },
-//       });
-  
-//       res.status(200).json({
-//         message: 'User assigned to ticket successfully',
-//         ticket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to assign user to ticket',
-//         error: err.message,
-//       });
-//     }
-//   };
+
 
 exports.addUserToAssigned = async (req, res) => {
     const { ticketId, userId } = req.body;
@@ -416,44 +767,22 @@ exports.revokeUserFromShared = async (req, res) => {
     }
   };
 
-//   exports.addReplyToTicket = async (req, res) => {
-//     const { ticketId, detail, attachments } = req.body;
-//     const userId = req.user.id; // Assuming auth middleware adds the user
-  
-//     try {
-//       const reply = await prisma.replies.create({
-//         data: {
-//           ticketId,
-//           userId,
-//           detail,
-//           attachments,
-//           date: new Date(),
-//         },
-//       });
-  
-//       res.status(201).json({
-//         message: 'Reply added successfully',
-//         reply,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to add reply',
-//         error: err.message,
-//       });
-//     }
-//   };
+
 // exports.addReplyToTicket = async (req, res) => {
-//     const { ticketId, detail, attachments } = req.body;
+//     const { ticketId, detail } = req.body; // No longer expecting `attachments` from body
 //     const userId = req.user.id; // Assuming auth middleware adds the user
   
 //     try {
+//       // Handle file uploads
+//       const attachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
+  
 //       const reply = await prisma.replies.create({
 //         data: {
 //           id: uuidv4(), // Generate a unique UUID for the reply
 //           ticketId,
 //           userId,
 //           detail,
-//           attachments: attachments || [], // Default to empty array if undefined
+//           attachments, // Store uploaded file paths
 //           date: new Date(),
 //         },
 //       });
@@ -472,52 +801,78 @@ exports.revokeUserFromShared = async (req, res) => {
 
 
 exports.addReplyToTicket = async (req, res) => {
-    const { ticketId, detail } = req.body; // No longer expecting `attachments` from body
-    const userId = req.user.id; // Assuming auth middleware adds the user
-  
-    try {
-      // Handle file uploads
-      const attachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-  
-      const reply = await prisma.replies.create({
-        data: {
-          id: uuidv4(), // Generate a unique UUID for the reply
-          ticketId,
-          userId,
-          detail,
-          attachments, // Store uploaded file paths
-          date: new Date(),
-        },
-      });
-  
-      res.status(201).json({
-        message: 'Reply added successfully',
-        reply,
-      });
-    } catch (err) {
-      res.status(400).json({
-        message: 'Failed to add reply',
-        error: err.message,
-      });
-    }
-  };
+  const { ticketId, detail } = req.body;
+  const userId = req.user.id;
 
-//   exports.updateReply = async (req, res) => {
-//     const { replyId, detail, attachments } = req.body;
+  try {
+    const attachments = [];
+    if (req.files) {
+      for (const file of req.files) {
+        const savedFile = await saveFileToGridFS(file);
+        attachments.push(savedFile._id);
+      }
+    }
+
+    const reply = await prisma.replies.create({
+      data: {
+        id: uuidv4(),
+        ticketId,
+        userId,
+        detail,
+        attachments, // Store attachment IDs
+        date: new Date(),
+      },
+    });
+
+    res.status(201).json({
+      message: 'Reply added successfully',
+      reply,
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: 'Failed to add reply',
+      error: err.message,
+    });
+  }
+};
+
+
+// exports.updateReply = async (req, res) => {
+//     const { replyId, detail } = req.body;
   
 //     try {
-//       const reply = await prisma.replies.update({
+//       // Fetch the current reply to get existing attachments
+//       const reply = await prisma.replies.findUnique({
+//         where: { id: replyId },
+//         select: {
+//           attachments: true, // Get current attachments
+//         },
+//       });
+  
+//       if (!reply) {
+//         return res.status(404).json({ message: 'Reply not found' });
+//       }
+  
+//       // Handle new attachments
+//       const newAttachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
+  
+//       // Combine existing and new attachments
+//       const updatedAttachments = [...reply.attachments, ...newAttachments];
+
+      
+//       // Update the reply
+//       const updatedReply = await prisma.replies.update({
 //         where: { id: replyId },
 //         data: {
 //           detail,
-//           attachments,
-//           date: new Date(), // Update the date to reflect the time of modification
+//           attachments: updatedAttachments, // Include updated attachments
+//           date: new Date(), // Update the date to reflect the modification time
 //         },
 //       });
   
 //       res.status(200).json({
 //         message: 'Reply updated successfully',
-//         reply,
+//         reply: updatedReply,
 //       });
 //     } catch (err) {
 //       res.status(400).json({
@@ -528,149 +883,50 @@ exports.addReplyToTicket = async (req, res) => {
 //   };
 
 exports.updateReply = async (req, res) => {
-    const { replyId, detail } = req.body;
-  
-    try {
-      // Fetch the current reply to get existing attachments
-      const reply = await prisma.replies.findUnique({
-        where: { id: replyId },
-        select: {
-          attachments: true, // Get current attachments
-        },
-      });
-  
-      if (!reply) {
-        return res.status(404).json({ message: 'Reply not found' });
-      }
-  
-      // Handle new attachments
-      const newAttachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-  
-      // Combine existing and new attachments
-      const updatedAttachments = [...reply.attachments, ...newAttachments];
+  const { replyId, detail } = req.body;
 
-      
-      // Update the reply
-      const updatedReply = await prisma.replies.update({
-        where: { id: replyId },
-        data: {
-          detail,
-          attachments: updatedAttachments, // Include updated attachments
-          date: new Date(), // Update the date to reflect the modification time
-        },
-      });
-  
-      res.status(200).json({
-        message: 'Reply updated successfully',
-        reply: updatedReply,
-      });
-    } catch (err) {
-      res.status(400).json({
-        message: 'Failed to update reply',
-        error: err.message,
-      });
+  try {
+    const reply = await prisma.replies.findUnique({
+      where: { id: replyId },
+      select: { attachments: true },
+    });
+
+    if (!reply) {
+      return res.status(404).json({ message: 'Reply not found' });
     }
-  };
 
-//   exports.updateTicket = async (req, res) => {
-//     const { ticketId, subject, detail, department, assignedTo, attachments, shared, visibility } = req.body;
-  
-//     try {
-//       // Fetch the current ticket to check its status
-//       const ticket = await prisma.tickets.findUnique({
-//         where: { id: ticketId },
-//         select: { status: true }, // Fetch only the status field
-//       });
-  
-//       if (!ticket) {
-//         return res.status(404).json({ message: 'Ticket not found' });
-//       }
-  
-//       if (ticket.status !== 'RFI') {
-//         return res.status(403).json({ message: 'Ticket can only be updated when its status is RFI' });
-//       }
-  
-//       // Update the ticket if the status is RFI
-//       const updatedTicket = await prisma.tickets.update({
-//         where: { id: ticketId },
-//         data: {
-//           subject,
-//           detail,
-//           department,
-//           assignedTo,
-//           attachments,
-//           shared,
-//           visibility,
-//         },
-//       });
-  
-//       res.status(200).json({
-//         message: 'Ticket updated successfully',
-//         ticket: updatedTicket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to update ticket',
-//         error: err.message,
-//       });
-//     }
-//   };
+    const newAttachments = [];
+    if (req.files) {
+      for (const file of req.files) {
+        const savedFile = await saveFileToGridFS(file);
+        newAttachments.push(savedFile._id);
+      }
+    }
+
+    const updatedReply = await prisma.replies.update({
+      where: { id: replyId },
+      data: {
+        detail,
+        attachments: [...reply.attachments, ...newAttachments],
+        date: new Date(),
+      },
+    });
+
+    res.status(200).json({
+      message: 'Reply updated successfully',
+      reply: updatedReply,
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: 'Failed to update reply',
+      error: err.message,
+    });
+  }
+};
 
 
-// exports.updateTicket = async (req, res) => {
-//     const { ticketId, subject, detail, department, assignedTo, attachments, shared, visibility } = req.body;
-  
-//     try {
-//       // Fetch the current ticket to check its status and existing attachments
-//       const ticket = await prisma.tickets.findUnique({
-//         where: { id: ticketId },
-//         select: {
-//           status: true,
-//           attachments: true, // Get current attachments
-//         },
-//       });
-//       console.log("ASSIGNED: ",assignedTo);
-      
-//       if (!ticket) {
-//         return res.status(404).json({ message: 'Ticket not found' });
-//       }
-  
-//       if (ticket.status !== 'RFI') {
-//         return res.status(403).json({ message: 'Ticket can only be updated when its status is RFI' });
-//       }
-  
-//       // Handle new attachments
-//       const newAttachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-  
-//       // Combine existing and new attachments
-//       const updatedAttachments = [...ticket.attachments, ...newAttachments];
-  
-//       // Update the ticket
-//       const updatedTicket = await prisma.tickets.update({
-//         where: { id: ticketId },
-//         data: {
-//           subject,
-//           detail,
-//           department: Array.isArray(department) ? department : department.split(','), // Ensure department is an array
-//           assignedTo: assignedTo ? assignedTo : [], // Expect array of user IDs
-//           attachments: updatedAttachments, // Include updated attachments
-//           shared: shared ? shared : [], // Expect array of user IDs
-//           visibility,
-//         },
-//       });
-  
-//       res.status(200).json({
-//         message: 'Ticket updated successfully',
-//         ticket: updatedTicket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to update ticket',
-//         error: err.message,
-//       });
-//     }
-//   };
-  
+
+
 
 // exports.updateTicket = async (req, res) => {
 //     const { ticketId, subject, detail, department, visibility } = req.body;
@@ -698,8 +954,10 @@ exports.updateReply = async (req, res) => {
 //       const newAttachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
 //       const updatedAttachments = [...ticket.attachments, ...newAttachments]; // Combine existing and new attachments
   
-//       // Merge existing and new assignedTo, department, and shared values
-//       const updatedDepartment = department ? [...new Set([...ticket.department, ...department])] : ticket.department;
+//       // Ensure department is always an array
+//       const updatedDepartment = department 
+//         ? [...new Set([...ticket.department, ...(Array.isArray(department) ? department : department.split(',').map((d) => d.trim()))])]
+//         : ticket.department;
   
 //       // Update the ticket
 //       const updatedTicket = await prisma.tickets.update({
@@ -709,6 +967,7 @@ exports.updateReply = async (req, res) => {
 //           detail,
 //           department: updatedDepartment, // Merge new and existing departments
 //           attachments: updatedAttachments, // Include updated attachments
+//           visibility,
 //         },
 //       });
   
@@ -723,103 +982,71 @@ exports.updateReply = async (req, res) => {
 //       });
 //     }
 //   };
-
+  
 
 exports.updateTicket = async (req, res) => {
-    const { ticketId, subject, detail, department, visibility } = req.body;
-  
-    try {
-      // Fetch the current ticket to check its status and existing fields
-      const ticket = await prisma.tickets.findUnique({
-        where: { id: ticketId },
-        select: {
-          status: true,
-          attachments: true, // Get current attachments
-          department: true, // Get current department array
-        },
-      });
-  
-      if (!ticket) {
-        return res.status(404).json({ message: 'Ticket not found' });
-      }
-  
-      if (ticket.status !== 'RFI') {
-        return res.status(403).json({ message: 'Ticket can only be updated when its status is RFI' });
-      }
-  
-      // Handle new attachments
-      const newAttachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-      const updatedAttachments = [...ticket.attachments, ...newAttachments]; // Combine existing and new attachments
-  
-      // Ensure department is always an array
-      const updatedDepartment = department 
-        ? [...new Set([...ticket.department, ...(Array.isArray(department) ? department : department.split(',').map((d) => d.trim()))])]
-        : ticket.department;
-  
-      // Update the ticket
-      const updatedTicket = await prisma.tickets.update({
-        where: { id: ticketId },
-        data: {
-          subject,
-          detail,
-          department: updatedDepartment, // Merge new and existing departments
-          attachments: updatedAttachments, // Include updated attachments
-          visibility,
-        },
-      });
-  
-      res.status(200).json({
-        message: 'Ticket updated successfully',
-        ticket: updatedTicket,
-      });
-    } catch (err) {
-      res.status(400).json({
-        message: 'Failed to update ticket',
-        error: err.message,
-      });
+  const { ticketId, subject, detail, department, visibility } = req.body;
+
+  try {
+    // Fetch the current ticket to check its status and existing fields
+    const ticket = await prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: {
+        status: true,
+        attachments: true, // Get current attachments
+        department: true, // Get current department array
+      },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
     }
-  };
-  
-  
 
+    if (ticket.status !== 'RFI') {
+      return res.status(403).json({ message: 'Ticket can only be updated when its status is RFI' });
+    }
 
-//   exports.getRepliesByTicket = async (req, res) => {
-//     const { ticketId } = req.params;
+    // Handle new attachments and save them to GridFS
+    const newAttachments = [];
+    if (req.files) {
+      for (const file of req.files) {
+        const savedFile = await saveFileToGridFS(file);
+        newAttachments.push(savedFile._id); // Store attachment IDs in the ticket
+      }
+    }
+
+    const updatedAttachments = [...ticket.attachments, ...newAttachments]; // Combine existing and new attachments
+
+    // Ensure department is always an array
+    const updatedDepartment = department
+      ? [...new Set([...ticket.department, ...(Array.isArray(department) ? department : department.split(',').map((d) => d.trim()))])]
+      : ticket.department;
+
+    // Update the ticket
+    const updatedTicket = await prisma.tickets.update({
+      where: { id: ticketId },
+      data: {
+        subject,
+        detail,
+        department: updatedDepartment, // Merge new and existing departments
+        attachments: updatedAttachments, // Include updated attachments
+        visibility,
+      },
+    });
+
+    res.status(200).json({
+      message: 'Ticket updated successfully',
+      ticket: updatedTicket,
+    });
+  } catch (err) {
+    console.error('Error updating ticket:', err); // Log error for debugging
+    res.status(400).json({
+      message: 'Failed to update ticket',
+      error: err.message,
+    });
+  }
+};
   
-//     try {
-//       // Fetch replies for the specific ticket
-//       const replies = await prisma.replies.findMany({
-//         where: { ticketId: parseInt(ticketId) }, // Ensure ticketId is an integer
-//         include: {
-//           user: {
-//             select: {
-//               id: true,
-//               first_name: true,
-//               last_name: true,
-//               email_address: true,
-//             },
-//           },
-//         },
-//         orderBy: {
-//           date: 'asc', // Sort replies by date in ascending order
-//         },
-//       });
-  
-//       if (replies.length === 0) {
-//         return res.status(404).json({ message: 'No replies found for this ticket' });
-//       }
-  
-//       res.status(200).json({
-//         message: 'Replies retrieved successfully',
-//         replies,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to retrieve replies',
-//         error: err.message,
-//       });
-//     }
-//   };
 
 exports.getRepliesByTicket = async (req, res) => {
     const { ticketId } = req.params;
@@ -832,6 +1059,7 @@ exports.getRepliesByTicket = async (req, res) => {
           id: true,
           detail: true,
           date: true,
+          attachments:true,
           userId: true, // Include userId to fetch user details
         },
         orderBy: {
@@ -875,55 +1103,6 @@ exports.getRepliesByTicket = async (req, res) => {
   };
   
   
-
-//   exports.getAllTickets = async (req, res) => {
-//     try {
-//       // Fetch all tickets with related data
-//       const tickets = await prisma.tickets.findMany({
-//         include: {
-//           sender: {
-//             select: {
-//               id: true,
-//               first_name: true,
-//               last_name: true,
-//               email_address: true,
-//             },
-//           },
-//           replies: {
-//             select: {
-//               id: true,
-//               detail: true,
-//               date: true,
-//               user: {
-//                 select: {
-//                   id: true,
-//                   first_name: true,
-//                   last_name: true,
-//                 },
-//               },
-//             },
-//           },
-//         },
-//         orderBy: {
-//           date: 'desc', // Sort tickets by most recent
-//         },
-//       });
-  
-//       if (tickets.length === 0) {
-//         return res.status(404).json({ message: 'No tickets found' });
-//       }
-  
-//       res.status(200).json({
-//         message: 'Tickets retrieved successfully',
-//         tickets,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to retrieve tickets',
-//         error: err.message,
-//       });
-//     }
-//   };
 
 exports.getAllTickets = async (req, res) => {
     try {
@@ -1001,55 +1180,6 @@ exports.getAllTickets = async (req, res) => {
   };
   
   
-
-//   exports.getTicketById = async (req, res) => {
-//     const { ticketId } = req.params;
-  
-//     try {
-//       // Fetch the ticket with related data
-//       const ticket = await prisma.tickets.findUnique({
-//         where: { id: parseInt(ticketId) },
-//         include: {
-//           sender: {
-//             select: {
-//               id: true,
-//               first_name: true,
-//               last_name: true,
-//               email_address: true,
-//             },
-//           },
-//           replies: {
-//             select: {
-//               id: true,
-//               detail: true,
-//               date: true,
-//               user: {
-//                 select: {
-//                   id: true,
-//                   first_name: true,
-//                   last_name: true,
-//                 },
-//               },
-//             },
-//           },
-//         },
-//       });
-  
-//       if (!ticket) {
-//         return res.status(404).json({ message: 'Ticket not found' });
-//       }
-  
-//       res.status(200).json({
-//         message: 'Ticket retrieved successfully',
-//         ticket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to retrieve ticket',
-//         error: err.message,
-//       });
-//     }
-//   };
   
 
 exports.getTicketById = async (req, res) => {
@@ -1120,3 +1250,89 @@ exports.getTicketById = async (req, res) => {
     }
   };
   
+
+//   // ticketController.js
+// exports.getTicketsByUser = async (req, res) => {
+//   try {
+//     const userId = req.user.id; // Assuming user ID is set by the auth middleware
+
+//     const tickets = await prisma.tickets.findMany({
+//       where: {
+//         OR: [
+//           { senderId: userId }, // Tickets created by the user
+//           { shared: { has: userId } }, // Tickets shared with the user
+//           { assigned: { has: userId } }, // Tickets assigned to the user
+//         ],
+//       },
+//     });
+
+//     if (!tickets || tickets.length === 0) {
+//       return res.status(404).json({ message: 'No tickets found for this user.' });
+//     }
+
+//     res.status(200).json({ tickets });
+//   } catch (error) {
+//     console.error('Error retrieving tickets:', error);
+//     res.status(500).json({ message: 'Failed to retrieve tickets.' });
+//   }
+// };
+
+// // ticketController.js
+// exports.getTicketsByUser = async (req, res) => {
+//   try {
+//     console.log("Pre-Unlock");
+    
+//     const userId = req.user.id; // User ID from auth middleware
+//     console.log("User: ",userId);
+    
+//     const tickets = await prisma.tickets.findMany({
+//       where: {
+//         OR: [
+//           { senderId: userId }, // Tickets created by the user
+//           { shared: { contains: userId } }, // Tickets shared with the user
+//           { assignedTo: { contains: userId } }, // Tickets assigned to the user
+//         ],
+//       },
+//     });
+
+//     if (!tickets || tickets.length === 0) {
+//       return res.status(404).json({ message: 'No tickets found for this user.' });
+//     }
+
+//     res.status(200).json({ tickets });
+//   } catch (error) {
+//     console.error('Error retrieving tickets:', error);
+//     res.status(500).json({ message: 'Failed to retrieve tickets.' });
+//   }
+// };
+
+
+exports.getTicketsByUser = async (req, res) => {
+  try {
+    // console.log("Pre-Unlock");
+
+    const userId = req.user?.id || "MissingUserId";
+    // console.log("User ID from middleware:", userId);
+
+    const tickets = await prisma.tickets.findMany({
+      where: {
+        OR: [
+          { senderId: userId },
+          { shared: { has: userId } },
+          { assignedTo: { has: userId } },
+        ],
+      },
+    });
+
+    // console.log("Retrieved Tickets:", tickets);
+
+    if (!tickets.length) {
+      return res.status(404).json({ message: 'No tickets found for this user.' });
+    }
+
+    res.status(200).json({ tickets });
+  } catch (error) {
+    console.error('Error retrieving tickets:', error);
+    res.status(500).json({ message: 'Failed to retrieve tickets.' });
+  }
+};
