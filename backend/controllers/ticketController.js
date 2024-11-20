@@ -4,85 +4,6 @@ const { v4: uuidv4 } = require('uuid'); // Import the UUID generator
 const { saveFileToGridFS, getFileStream, deleteFile, waitForBucket,findFile, findFilesByType, findFilesByTypeDelete } = require('../middleware/upload');
 const mongoose = require('mongoose'); // Add this line
 
-// exports.createTicket = async (req, res) => {
-//   const { subject, detail, department } = req.body;
-//   const userID = req.user.id; // Extract user ID from the authenticated token
-
-//   console.log('User ID: ', userID);
-
-//   try {
-//     // Check if user exists
-//     const attachmentPaths = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-//     const userExists = await prisma.sec_system_user.findUnique({
-//       where: { id: userID }, // Adjust based on actual User model
-//     });
-
-//     if (!userExists) {
-//       return res.status(400).json({
-//         message: 'User does not exist. Cannot create ticket.',
-//       });
-//     }
-
-//     const ticket = await prisma.tickets.create({
-//       data: {
-//         id: uuidv4(), // Generate a unique UUID for the ticket
-//         senderId: userID, // UUID from token
-//         subject,
-//         detail,
-//         department: Array.isArray(department) ? department : department.split(','), // Ensure it's an array
-//         attachments: attachmentPaths, // Default to an empty array if undefined
-//       },
-//     });
-
-//     res.status(201).json({
-//       message: 'Ticket created successfully',
-//       ticket,
-//     });
-//   } catch (err) {
-//     console.error('Error creating ticket:', err); // Log detailed error for debugging
-//     res.status(400).json({
-//       message: 'Failed to create ticket',
-//       error: err.message,
-//     });
-//   }
-// };
-
-// exports.createTicket = async (req, res) => {
-//   const { subject, detail, department } = req.body;
-//   const userID = req.user.id;
-
-//   try {
-//     const attachments = [];
-//     if (req.files) {
-//       for (const file of req.files) {
-//         const savedFile = await saveFileToGridFS(file);
-//         attachments.push(savedFile._id);
-//       }
-//     }
-
-//     const ticket = await prisma.tickets.create({
-//       data: {
-//         id: uuidv4(),
-//         senderId: userID,
-//         subject,
-//         detail,
-//         department: Array.isArray(department) ? department : department.split(','),
-//         attachments, // Store attachment IDs
-//       },
-//     });
-
-//     res.status(201).json({
-//       message: 'Ticket created successfully',
-//       ticket,
-//     });
-//   } catch (err) {
-//     console.error('Error creating ticket:', err);
-//     res.status(400).json({
-//       message: 'Failed to create ticket',
-//       error: err.message,
-//     });
-//   }
-// };
 
 // Create Ticket with File Upload
 exports.createTicket = async (req, res) => {
@@ -90,8 +11,8 @@ exports.createTicket = async (req, res) => {
   const userID = req.user.id;
 
   try {
-    const userExists = await prisma.sec_system_user.findUnique({
-      where: { id: userID },
+    const userExists = await prisma.sec_system_user.findFirst({
+      where: { user_id: userID },
     });
 
     if (!userExists) {
@@ -123,147 +44,13 @@ exports.createTicket = async (req, res) => {
   }
 };
 
-// // Serve File
-// exports.getFile = async (req, res) => {
-//   try {
-//     const fileStream = getFileStream(req.params.fileId);
-//     fileStream.pipe(res);
-//   } catch (err) {
-//     res.status(404).json({ message: 'File not found' });
-//   }
-// };
-  
-
-// exports.getFile = async (req, res) => {
-//   try {
-//     const fileId = req.params.fileId;
-
-//     // Validate ObjectId
-//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
-//       return res.status(400).json({ message: 'Invalid file ID' });
-//     }
-
-//     const fileStream = getFileStream(fileId);
-
-//     fileStream.on('error', (error) => {
-//       console.error('Stream error:', error);
-//       return res.status(404).json({ message: 'File not found' });
-//     });
-
-//     res.set({
-//       'Content-Disposition': `attachment; filename="${fileId}"`,
-//     });
-
-//     fileStream.pipe(res);
-//   } catch (err) {
-//     console.error('Error retrieving file:', err);
-//     res.status(500).json({ message: 'Failed to retrieve file' });
-//   }
-// };
-
-// exports.getFile = async (req, res) => {
-//   try {
-//     const fileId = req.params.fileId;
-
-//     // Validate ObjectId
-//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
-//       return res.status(400).json({ message: 'Invalid file ID' });
-//     }
-
-//     await waitForBucket(); // Ensure GridFSBucket is ready
-
-//     const files = await gfsBucket.find({ _id: new mongoose.Types.ObjectId(fileId) }).toArray();
-
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ message: 'File not found' });
-//     }
-
-//     const fileMeta = files[0];
-
-//     res.set({
-//       'Content-Disposition': `attachment; filename="${fileMeta.filename}"`,
-//       'Content-Type': fileMeta.contentType,
-//     });
-
-//     const fileStream = await getFileStream(fileId);
-
-//     fileStream.on('error', (error) => {
-//       console.error('Stream error:', error);
-//       res.status(404).json({ message: 'File not found' });
-//     });
-
-//     fileStream.pipe(res);
-//   } catch (err) {
-//     console.error('Error retrieving file:', err);
-//     res.status(500).json({ message: 'Failed to retrieve file' });
-//   }
-// };
-
-// exports.getFile = async (req, res) => {
-//   try {
-//     console.log("REACHED 1");
-    
-//     const fileId = req.params.fileId;
-//     console.log("FILE ID: ",fileId);
-    
-//     // Validate ObjectId
-//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
-//       return res.status(400).json({ message: 'Invalid file ID' });
-//     }
-
-//     const files = await findFile(fileId);
-
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ message: 'File not found' });
-//     }
-
-//     const fileMeta = files[0];
-
-//     // res.set({
-//       // 'Content-Disposition': `attachment; filename="${fileMeta.filename}"`,
-//       // 'Content-Type': fileMeta.contentType,
-//       // 'Content-Length':fileMeta.length,
-//       // 'Upload-Date':fileMeta.uploadDate
-//     // });
-
-
-
-//     const fileStream = await getFileStream(fileId);
-//     res.set({
-//       'Content-Disposition': `attachment; filename="${fileMeta.filename}"`,
-//       'Content-Type': fileMeta.contentType,
-//       'Content-Length':fileMeta.length,
-//       'Upload-Date':fileMeta.uploadDate
-//     });
-//     const buffer = [];
-//     fileStream.on('data', (chunk) => buffer.push(chunk));
-//     fileStream.on('end', () => {
-//       const base64Data = Buffer.concat(buffer).toString('base64');
-//       res.json({
-//         filename: fileMeta.filename,
-//         contentType: fileMeta.contentType,
-//         base64Data,
-//       });
-//     });
-
-//     fileStream.on('error', (error) => {
-//       console.error('Stream error:', error);
-//       res.status(404).json({ message: 'File not found' });
-//     });
-
-//     fileStream.pipe(res);
-//   } catch (err) {
-//     console.error('Error retrieving file:', err);
-//     res.status(500).json({ message: 'Failed to retrieve file' });
-//   }
-// };
 
 exports.getFile = async (req, res) => {
   try {
-    console.log("REACHED 1");
+    // console.log("REACHED 1");
 
     const fileId = req.params.fileId;
-    console.log("FILE ID: ", fileId);
+    // console.log("FILE ID: ", fileId);
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(fileId)) {
@@ -329,35 +116,7 @@ exports.getAllFiles = async (req, res) => {
   }
 };
 
-// exports.deleteFiles = async (req, res) => {
-//   try {
-//     const { fileType } = req.query; // Get fileType from query params
-//     const files = await findFilesByTypeDelete(fileType);
 
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ message: 'No files found' });
-//     }
-
-//     for (const file of files) {
-//       await deleteFile(file._id);
-
-//       // Remove file references from tickets and replies
-//       await prisma.tickets.updateMany({
-//         where: { attachments: { has: file._id.toString() } },
-//         data: { attachments: { set: { _id: file._id.toString() } } },
-//       });
-//       await prisma.replies.updateMany({
-//         where: { attachments: { has: file._id.toString() } },
-//         data: { attachments: { set: { _id: file._id.toString() } } },
-//       });
-//     }
-
-//     res.status(200).json({ message: `Deleted ${files.length} files successfully` });
-//   } catch (err) {
-//     console.error('Error deleting files:', err);
-//     res.status(500).json({ message: 'Failed to delete files' });
-//   }
-// };
 
 
 exports.deleteFiles = async (req, res) => {
@@ -408,124 +167,6 @@ exports.deleteFiles = async (req, res) => {
 };
 
 
-
-// exports.deleteFileById = async (req, res) => {
-//   try {
-//     const fileId = req.params.fileId;
-
-//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
-//       return res.status(400).json({ message: 'Invalid file ID' });
-//     }
-
-//     const files = await findFilesByTypeDelete(null, fileId);
-
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ message: 'File not found' });
-//     }
-
-//     await deleteFile(fileId);
-
-//     // Remove file references from tickets and replies
-//     await prisma.tickets.updateMany({
-//       where: { attachments: { has: fileId } },
-//       data: { attachments: { set: { _id: file._id.toString() } } },
-//     });
-//     await prisma.replies.updateMany({
-//       where: { attachments: { has: fileId } },
-//       data: { attachments: { set: { _id: file._id.toString() } } },
-//     });
-
-//     res.status(200).json({ message: 'File deleted successfully' });
-//   } catch (err) {
-//     console.error('Error deleting file:', err);
-//     res.status(500).json({ message: 'Failed to delete file' });
-//   }
-// };
-
-// exports.deleteFileById = async (req, res) => {
-//   try {
-//     const fileId = req.params.fileId;
-
-//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
-//       return res.status(400).json({ message: 'Invalid file ID' });
-//     }
-
-//     const files = await findFilesByType(null, fileId);
-
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ message: 'File not found' });
-//     }
-
-//     // Delete file from GridFS
-//     await deleteFile(fileId);
-
-//     // Remove file references from tickets and replies
-//     await prisma.tickets.updateMany({
-//       where: { attachments: { has: fileId } },
-//       data: {
-//         attachments: {
-//           set: {
-//             attachments: [],
-//           },
-//         },
-//       },
-//     });
-
-//     await prisma.replies.updateMany({
-//       where: { attachments: { has: fileId } },
-//       data: {
-//         attachments: {
-//           set: {
-//             attachments: [],
-//           },
-//         },
-//       },
-//     });
-
-//     res.status(200).json({ message: 'File deleted successfully' });
-//   } catch (err) {
-//     console.error('Error deleting file:', err);
-//     res.status(500).json({ message: 'Failed to delete file' });
-//   }
-// };
-
-// exports.deleteFileById = async (req, res) => {
-//   try {
-//     const { fileId } = req.params;
-
-//     // Validate ObjectId
-//     if (!mongoose.Types.ObjectId.isValid(fileId)) {
-//       return res.status(400).json({ message: 'Invalid file ID' });
-//     }
-
-//     console.log("PARSED ID:",fileId);
-    
-//     // Check if file exists before deletion
-//     const file = await findFile(fileId);
-
-//     if (!file || file.length === 0) {
-//       return res.status(404).json({ message: 'File not found' });
-//     }
-
-//     await deleteFile(fileId); // Delete the file
-
-//     // Remove references to the file in `tickets` and `replies`
-//     await prisma.tickets.updateMany({
-//       where: { attachments: { has: fileId } },
-//       data: { attachments: { set: [] } },
-//     });
-
-//     await prisma.replies.updateMany({
-//       where: { attachments: { has: fileId } },
-//       data: { attachments: { set: [] } },
-//     });
-
-//     res.status(200).json({ message: 'File deleted successfully' });
-//   } catch (err) {
-//     console.error('Error deleting file:', err);
-//     res.status(500).json({ message: 'Failed to delete file' });
-//   }
-// };
 exports.deleteFileById = async (req, res) => {
   try {
     const { fileId } = req.params;
@@ -579,29 +220,102 @@ for (const reply of repliesToUpdate) {
 };
 
 
+// exports.addUserToShared = async (req, res) => {
+//   // console.log("REACHED...");
+ 
+//   try {
+//     if (!prisma) {
+//       throw new Error('Prisma client not initialized');
+//     }
+
+//     const { ticketId, userId } = req.body;
+//     const requesterId = req.user?.id;
+
+//     if (!ticketId || !userId) {
+//       return res.status(400).json({ message: 'Ticket ID and User ID are required' });
+//     }
+
+//     const ticket = await prisma.tickets.findUnique({
+//       where: { id: ticketId },
+//       select: { shared: true, senderId: true },
+//     });
+
+//     if (!ticket) {
+//       return res.status(404).json({ message: 'Ticket not found' });
+//     }
+
+//     if (ticket.senderId === userId) {
+//       return res.status(400).json({ message: "Owner can't assign themselves to shared" });
+//     }
+
+//     if (ticket.shared.includes(userId)) {
+//       return res.status(400).json({ message: 'User is already assigned to this ticket' });
+//     }
+
+//     const updatedTicket = await prisma.tickets.update({
+//       where: { id: ticketId },
+//       data: {
+//         shared: {
+//           push: userId,
+//         },
+//       },
+//     });
+
+//     res.status(200).json({
+//       message: 'User assigned to ticket successfully',
+//       ticket: updatedTicket,
+//     });
+//   } catch (err) {
+//     console.error('Error in addUserToShared:', err);
+//     res.status(400).json({
+//       message: 'Failed to assign user to ticket',
+//       error: err.message,
+//     });
+//   }
+// };
+  
 exports.addUserToShared = async (req, res) => {
-    const { ticketId, userId } = req.body;
-    const requesterId = req.user.id; // Assuming the ID of the authenticated user
-  
-    try {
-      const ticket = await prisma.tickets.findUnique({
-        where: { id: ticketId },
-        select: { shared: true, senderId: true }, // Fetch only shared and senderId
-      });
-  
-      if (!ticket) {
-        return res.status(404).json({ message: 'Ticket not found' });
+  try {
+    if (!prisma) {
+      throw new Error('Prisma client not initialized');
+    }
+    const { ticketId, userId } = req.body; // Expect userIds to be an array
+    const requesterId = req.user?.id;
+    // console.log("Data: ",userId);
+    
+    if (!ticketId || !userId) {
+      return res.status(400).json({ message: 'Ticket ID and an array of User IDs are required' });
+    }
+
+    const ticket = await prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: { shared: true, senderId: true },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Filter out invalid users (owner and already shared)
+    const validUserIds = userId.filter((userId) => {
+      if (userId === ticket.senderId) {
+        console.warn(`Skipping owner userId: ${userId}`);
+        return false;
       }
-  
-      if (ticket.senderId === userId) {
-        return res.status(400).json({ message: "Owner can't add themselves to shared" });
-      }
-  
       if (ticket.shared.includes(userId)) {
-        return res.status(400).json({ message: 'User is already in the shared list' });
+        console.warn(`Skipping already shared userId: ${userId}`);
+        return false;
       }
-  
-      const updatedTicket = await prisma.ticket.update({
+      return true;
+    });
+
+    if (validUserIds.length === 0) {
+      return res.status(400).json({ message: 'No valid users to add to shared list' });
+    }
+
+    // Push each valid user ID one by one
+    for (const userId of validUserIds) {
+      await prisma.tickets.update({
         where: { id: ticketId },
         data: {
           shared: {
@@ -609,44 +323,190 @@ exports.addUserToShared = async (req, res) => {
           },
         },
       });
-  
-      res.status(200).json({
-        message: 'User added to shared successfully',
-        ticket: updatedTicket,
-      });
-    } catch (err) {
-      res.status(400).json({
-        message: 'Failed to add user to shared',
-        error: err.message,
-      });
     }
-  };
+
+    // Fetch the updated ticket
+    const updatedTicket = await prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: { shared: true },
+    });
+
+    res.status(200).json({
+      message: 'Users added to shared list successfully',
+      ticket: updatedTicket,
+    });
+  } catch (err) {
+    console.error('Error in addUserToShared:', err);
+    res.status(400).json({
+      message: 'Failed to add users to shared list',
+      error: err.message,
+    });
+  }
+};
+
   
 
+
+
+  
+// exports.addUserToAssigned = async (req, res) => {
+//   // console.log("test 002");
+
+//   try {
+//     if (!prisma) {
+//       throw new Error('Prisma client not initialized');
+//     }
+
+//     const { ticketId, userId } = req.body;
+//     const requesterId = req.user?.id;
+
+//     if (!ticketId || !userId) {
+//       return res.status(400).json({ message: 'Ticket ID and User ID are required' });
+//     }
+
+//     const ticket = await prisma.tickets.findUnique({
+//       where: { id: ticketId },
+//       select: { assignedTo: true, senderId: true },
+//     });
+
+//     if (!ticket) {
+//       return res.status(404).json({ message: 'Ticket not found' });
+//     }
+
+//     if (ticket.senderId === userId) {
+//       return res.status(400).json({ message: "Owner can't assign themselves" });
+//     }
+
+//     if (ticket.assignedTo.includes(userId)) {
+//       return res.status(400).json({ message: 'User is already assigned to this ticket' });
+//     }
+
+//     const updatedTicket = await prisma.tickets.update({
+//       where: { id: ticketId },
+//       data: {
+//         assignedTo: {
+//           push: userId,
+//         },
+//       },
+//     });
+
+//     res.status(200).json({
+//       message: 'User assigned to ticket successfully',
+//       ticket: updatedTicket,
+//     });
+//   } catch (err) {
+//     console.error('Error in addUserToAssigned:', err);
+//     res.status(400).json({
+//       message: 'Failed to assign user to ticket',
+//       error: err.message,
+//     });
+//   }
+// };
+
+
+// exports.addUserToAssigned = async (req, res) => {
+//   try {
+//     if (!prisma) {
+//       throw new Error('Prisma client not initialized');
+//     }
+
+//     const { ticketId, userIds } = req.body; // Expect userIds to be an array
+//     const requesterId = req.user?.id;
+
+//     if (!ticketId || !userIds || !Array.isArray(userIds)) {
+//       return res.status(400).json({ message: 'Ticket ID and an array of User IDs are required' });
+//     }
+
+//     const ticket = await prisma.tickets.findUnique({
+//       where: { id: ticketId },
+//       select: { assignedTo: true, senderId: true },
+//     });
+
+//     if (!ticket) {
+//       return res.status(404).json({ message: 'Ticket not found' });
+//     }
+
+//     // Filter out any users who are already in assignedTo or are the ticket owner
+//     const validUserIds = userIds.filter((userId) => {
+//       if (userId === ticket.senderId) {
+//         console.warn(`Skipping owner userId: ${userId}`);
+//         return false;
+//       }
+//       if (ticket.assignedTo.includes(userId)) {
+//         console.warn(`Skipping already assigned userId: ${userId}`);
+//         return false;
+//       }
+//       return true;
+//     });
+
+//     if (validUserIds.length === 0) {
+//       return res.status(400).json({ message: 'No valid users to assign to this ticket' });
+//     }
+
+//     const updatedTicket = await prisma.tickets.update({
+//       where: { id: ticketId },
+//       data: {
+//         assignedTo: {
+//           push: validUserIds, // Push the array of valid userIds
+//         },
+//       },
+//     });
+
+//     res.status(200).json({
+//       message: 'Users assigned to ticket successfully',
+//       ticket: updatedTicket,
+//     });
+//   } catch (err) {
+//     console.error('Error in addUserToAssigned:', err);
+//     res.status(400).json({
+//       message: 'Failed to assign users to ticket',
+//       error: err.message,
+//     });
+//   }
+// };
 
 exports.addUserToAssigned = async (req, res) => {
-    const { ticketId, userId } = req.body;
-    const requesterId = req.user.id; // Assuming the ID of the authenticated user
-  
-    try {
-      const ticket = await prisma.tickets.findUnique({
-        where: { id: ticketId },
-        select: { assignedTo: true, senderId: true }, // Fetch only assignedTo and senderId
-      });
-  
-      if (!ticket) {
-        return res.status(404).json({ message: 'Ticket not found' });
+  try {
+    if (!prisma) {
+      throw new Error('Prisma client not initialized');
+    }
+
+    const { ticketId, userId } = req.body; // Expect userIds to be an array
+    const requesterId = req.user?.id;
+
+    if (!ticketId || !userId) {
+      return res.status(400).json({ message: 'Ticket ID and an array of User IDs are required' });
+    }
+
+    const ticket = await prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: { assignedTo: true, senderId: true },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Filter out invalid users (owner and already assigned)
+    const validUserIds = userId.filter((userId) => {
+      if (userId === ticket.senderId) {
+        console.warn(`Skipping owner userId: ${userId}`);
+        return false;
       }
-  
-      if (ticket.senderId === userId) {
-        return res.status(400).json({ message: "Owner can't assign themselves" });
-      }
-  
       if (ticket.assignedTo.includes(userId)) {
-        return res.status(400).json({ message: 'User is already assigned to this ticket' });
+        console.warn(`Skipping already assigned userId: ${userId}`);
+        return false;
       }
-  
-      const updatedTicket = await prisma.tickets.update({
+      return true;
+    });
+
+    if (validUserIds.length === 0) {
+      return res.status(400).json({ message: 'No valid users to add to assigned list' });
+    }
+
+    // Push each valid user ID one by one
+    for (const userId of validUserIds) {
+      await prisma.tickets.update({
         where: { id: ticketId },
         data: {
           assignedTo: {
@@ -654,19 +514,27 @@ exports.addUserToAssigned = async (req, res) => {
           },
         },
       });
-  
-      res.status(200).json({
-        message: 'User assigned to ticket successfully',
-        ticket: updatedTicket,
-      });
-    } catch (err) {
-      res.status(400).json({
-        message: 'Failed to assign user to ticket',
-        error: err.message,
-      });
     }
-  };
-  
+
+    // Fetch the updated ticket
+    const updatedTicket = await prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: { assignedTo: true },
+    });
+
+    res.status(200).json({
+      message: 'Users added to assigned list successfully',
+      ticket: updatedTicket,
+    });
+  } catch (err) {
+    console.error('Error in addUserToAssigned:', err);
+    res.status(400).json({
+      message: 'Failed to add users to assigned list',
+      error: err.message,
+    });
+  }
+};
+
   
 
 
@@ -694,6 +562,8 @@ exports.addUserToAssigned = async (req, res) => {
   };
   
 exports.revokeUserFromAssigned = async (req, res) => {
+  console.log("BODY", req.body);
+  
     const { ticketId, userId } = req.body;
   
     try {
@@ -729,75 +599,43 @@ exports.revokeUserFromAssigned = async (req, res) => {
   };
   
 
-
-
-
 exports.revokeUserFromShared = async (req, res) => {
-    const { ticketId, userId } = req.body;
-  
-    try {
-      // Find the current ticket
-      const ticket = await prisma.tickets.findUnique({
-        where: { id: ticketId },
-        select: { shared: true }, // Only fetch the shared field
-      });
-  
-      if (!ticket) {
-        return res.status(404).json({ message: 'Ticket not found' });
-      }
-  
-      // Remove userId from the shared array
-      const updatedShared = tickets.shared.filter(id => id !== userId);
-  
-      // Update the ticket with the new shared array
-      const updatedTicket = await prisma.tickets.update({
-        where: { id: ticketId },
-        data: { shared: updatedShared },
-      });
-  
-      res.status(200).json({
-        message: 'User revoked from shared list successfully',
-        ticket: updatedTicket,
-      });
-    } catch (err) {
-      res.status(400).json({
-        message: 'Failed to revoke user from shared list',
-        error: err.message,
-      });
+  const { ticketId, userId } = req.body;
+  console.log("Reached: ---");
+
+  try {
+    // Find the current ticket
+    const ticket = await prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: { shared: true }, // Only fetch the shared field
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
     }
-  };
+
+    // Remove userId from the shared array
+    const updatedShared = ticket.shared.filter((id) => id !== userId);
+
+    // Update the ticket with the new shared array
+    const updatedTicket = await prisma.tickets.update({
+      where: { id: ticketId },
+      data: { shared: updatedShared },
+    });
+
+    res.status(200).json({
+      message: 'User revoked from shared list successfully',
+      ticket: updatedTicket,
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: 'Failed to revoke user from shared list',
+      error: err.message,
+    });
+  }
+};
 
 
-// exports.addReplyToTicket = async (req, res) => {
-//     const { ticketId, detail } = req.body; // No longer expecting `attachments` from body
-//     const userId = req.user.id; // Assuming auth middleware adds the user
-  
-//     try {
-//       // Handle file uploads
-//       const attachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-  
-//       const reply = await prisma.replies.create({
-//         data: {
-//           id: uuidv4(), // Generate a unique UUID for the reply
-//           ticketId,
-//           userId,
-//           detail,
-//           attachments, // Store uploaded file paths
-//           date: new Date(),
-//         },
-//       });
-  
-//       res.status(201).json({
-//         message: 'Reply added successfully',
-//         reply,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to add reply',
-//         error: err.message,
-//       });
-//     }
-//   };
 
 
 exports.addReplyToTicket = async (req, res) => {
@@ -837,50 +675,7 @@ exports.addReplyToTicket = async (req, res) => {
 };
 
 
-// exports.updateReply = async (req, res) => {
-//     const { replyId, detail } = req.body;
-  
-//     try {
-//       // Fetch the current reply to get existing attachments
-//       const reply = await prisma.replies.findUnique({
-//         where: { id: replyId },
-//         select: {
-//           attachments: true, // Get current attachments
-//         },
-//       });
-  
-//       if (!reply) {
-//         return res.status(404).json({ message: 'Reply not found' });
-//       }
-  
-//       // Handle new attachments
-//       const newAttachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-  
-//       // Combine existing and new attachments
-//       const updatedAttachments = [...reply.attachments, ...newAttachments];
 
-      
-//       // Update the reply
-//       const updatedReply = await prisma.replies.update({
-//         where: { id: replyId },
-//         data: {
-//           detail,
-//           attachments: updatedAttachments, // Include updated attachments
-//           date: new Date(), // Update the date to reflect the modification time
-//         },
-//       });
-  
-//       res.status(200).json({
-//         message: 'Reply updated successfully',
-//         reply: updatedReply,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to update reply',
-//         error: err.message,
-//       });
-//     }
-//   };
 
 exports.updateReply = async (req, res) => {
   const { replyId, detail } = req.body;
@@ -924,64 +719,6 @@ exports.updateReply = async (req, res) => {
   }
 };
 
-
-
-
-
-// exports.updateTicket = async (req, res) => {
-//     const { ticketId, subject, detail, department, visibility } = req.body;
-  
-//     try {
-//       // Fetch the current ticket to check its status and existing fields
-//       const ticket = await prisma.tickets.findUnique({
-//         where: { id: ticketId },
-//         select: {
-//           status: true,
-//           attachments: true, // Get current attachments
-//           department: true, // Get current department array
-//         },
-//       });
-  
-//       if (!ticket) {
-//         return res.status(404).json({ message: 'Ticket not found' });
-//       }
-  
-//       if (ticket.status !== 'RFI') {
-//         return res.status(403).json({ message: 'Ticket can only be updated when its status is RFI' });
-//       }
-  
-//       // Handle new attachments
-//       const newAttachments = req.files ? req.files.map((file) => file.path) : []; // Capture file paths
-//       const updatedAttachments = [...ticket.attachments, ...newAttachments]; // Combine existing and new attachments
-  
-//       // Ensure department is always an array
-//       const updatedDepartment = department 
-//         ? [...new Set([...ticket.department, ...(Array.isArray(department) ? department : department.split(',').map((d) => d.trim()))])]
-//         : ticket.department;
-  
-//       // Update the ticket
-//       const updatedTicket = await prisma.tickets.update({
-//         where: { id: ticketId },
-//         data: {
-//           subject,
-//           detail,
-//           department: updatedDepartment, // Merge new and existing departments
-//           attachments: updatedAttachments, // Include updated attachments
-//           visibility,
-//         },
-//       });
-  
-//       res.status(200).json({
-//         message: 'Ticket updated successfully',
-//         ticket: updatedTicket,
-//       });
-//     } catch (err) {
-//       res.status(400).json({
-//         message: 'Failed to update ticket',
-//         error: err.message,
-//       });
-//     }
-//   };
   
 
 exports.updateTicket = async (req, res) => {
@@ -1050,7 +787,8 @@ exports.updateTicket = async (req, res) => {
 
 exports.getRepliesByTicket = async (req, res) => {
     const { ticketId } = req.params;
-  
+    // console.log("REACHED TEST");
+    
     try {
       // Fetch replies for the specific ticket
       const replies = await prisma.replies.findMany({
@@ -1074,8 +812,8 @@ exports.getRepliesByTicket = async (req, res) => {
       // Enrich replies with user info
       const enrichedReplies = await Promise.all(
         replies.map(async (reply) => {
-          const user = await prisma.sec_system_user.findUnique({
-            where: { id: reply.userId },
+          const user = await prisma.sec_system_user.findFirst({
+            where: { user_id: reply.userId },
             select: {
               id: true,
               first_name: true,
@@ -1127,8 +865,8 @@ exports.getAllTickets = async (req, res) => {
       const enrichedTickets = await Promise.all(
         tickets.map(async (ticket) => {
           // Fetch sender information from sec_system_user
-          const sender = await prisma.sec_system_user.findUnique({
-            where: { id: ticket.senderId },
+          const sender = await prisma.sec_system_user.findFirst({
+            where: { user_id: ticket.senderId },
             select: {
               id: true,
               first_name: true,
@@ -1140,8 +878,8 @@ exports.getAllTickets = async (req, res) => {
           // Enrich replies with user info
           const enrichedReplies = await Promise.all(
             ticket.replies.map(async (reply) => {
-              const user = await prisma.sec_system_user.findUnique({
-                where: { id: reply.userId },
+              const user = await prisma.sec_system_user.findFirst({
+                where: { user_id: reply.userId },
                 select: {
                   id: true,
                   first_name: true,
@@ -1206,8 +944,8 @@ exports.getTicketById = async (req, res) => {
       }
   
       // Fetch sender information from sec_system_user using senderId
-      const sender = await prisma.sec_system_user.findUnique({
-        where: { id: ticket.senderId },
+      const sender = await prisma.sec_system_user.findFirst({
+        where: { user_id: ticket.senderId },
         select: {
           id: true,
           first_name: true,
@@ -1219,8 +957,8 @@ exports.getTicketById = async (req, res) => {
       // Enrich replies with user info
       const enrichedReplies = await Promise.all(
         ticket.replies.map(async (reply) => {
-          const user = await prisma.sec_system_user.findUnique({
-            where: { id: reply.userId },
+          const user = await prisma.sec_system_user.findFirst({
+            where: { user_id: reply.userId },
             select: {
               id: true,
               first_name: true,
@@ -1250,61 +988,6 @@ exports.getTicketById = async (req, res) => {
     }
   };
   
-
-//   // ticketController.js
-// exports.getTicketsByUser = async (req, res) => {
-//   try {
-//     const userId = req.user.id; // Assuming user ID is set by the auth middleware
-
-//     const tickets = await prisma.tickets.findMany({
-//       where: {
-//         OR: [
-//           { senderId: userId }, // Tickets created by the user
-//           { shared: { has: userId } }, // Tickets shared with the user
-//           { assigned: { has: userId } }, // Tickets assigned to the user
-//         ],
-//       },
-//     });
-
-//     if (!tickets || tickets.length === 0) {
-//       return res.status(404).json({ message: 'No tickets found for this user.' });
-//     }
-
-//     res.status(200).json({ tickets });
-//   } catch (error) {
-//     console.error('Error retrieving tickets:', error);
-//     res.status(500).json({ message: 'Failed to retrieve tickets.' });
-//   }
-// };
-
-// // ticketController.js
-// exports.getTicketsByUser = async (req, res) => {
-//   try {
-//     console.log("Pre-Unlock");
-    
-//     const userId = req.user.id; // User ID from auth middleware
-//     console.log("User: ",userId);
-    
-//     const tickets = await prisma.tickets.findMany({
-//       where: {
-//         OR: [
-//           { senderId: userId }, // Tickets created by the user
-//           { shared: { contains: userId } }, // Tickets shared with the user
-//           { assignedTo: { contains: userId } }, // Tickets assigned to the user
-//         ],
-//       },
-//     });
-
-//     if (!tickets || tickets.length === 0) {
-//       return res.status(404).json({ message: 'No tickets found for this user.' });
-//     }
-
-//     res.status(200).json({ tickets });
-//   } catch (error) {
-//     console.error('Error retrieving tickets:', error);
-//     res.status(500).json({ message: 'Failed to retrieve tickets.' });
-//   }
-// };
 
 
 exports.getTicketsByUser = async (req, res) => {

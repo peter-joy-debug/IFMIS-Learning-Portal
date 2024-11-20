@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const { log } = require('console');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
@@ -239,11 +240,11 @@ exports.register = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-    const { user_id, password } = req.body;
+    const { userId, password } = req.body;
   
     try {
       const user = await prisma.sec_system_user.findFirst({
-        where: { user_id },
+        where: { user_id:userId },
       });
   
       if (!user) {
@@ -271,11 +272,11 @@ exports.login = async (req, res) => {
       // Generate token with both user ID and cleaned user object
       const token = jwt.sign(
         {
-          id: user.id,
+          id: user.user_id,
           user: userCleaned,
         },
         process.env.JWT_SECRET,
-        { expiresIn: '12h' }
+        { expiresIn: '24h' }
       );
   
       res.status(200).json({
@@ -406,9 +407,9 @@ exports.getAllUsers = async (req, res) => {
   exports.getUserById = async (req, res) => {
     try {
       const { id } = req.params;
-  
-      const user = await prisma.sec_system_user.findUnique({
-        where: { id },
+      
+      const user = await prisma.sec_system_user.findFirst({
+        where: { user_id:id },
         select: {
           id: true,
           first_name: true,
