@@ -9,7 +9,6 @@ const mongoose = require('mongoose'); // Add this line
 exports.createTicket = async (req, res) => {
   const { subject, detail, department } = req.body;
   const userID = req.user.id;
-console.log("GETA ID: ",userID);
 
   try {
     const userExists = await prisma.sec_system_user.findFirst({
@@ -992,13 +991,42 @@ exports.getTicketById = async (req, res) => {
   
 
 
+// exports.getTicketsByUser = async (req, res) => {
+//   try {
+//     // console.log("Pre-Unlock");
+
+//     const userId = req.user?.id || "MissingUserId";
+//     // console.log("User ID from middleware:", userId);
+
+//     const tickets = await prisma.tickets.findMany({
+//       where: {
+//         OR: [
+//           { senderId: userId },
+//           { shared: { has: userId } },
+//           { assignedTo: { has: userId } },
+//         ],
+//       },
+//     });
+
+//     // console.log("Retrieved Tickets:", tickets);
+
+//     if (!tickets.length) {
+//       return res.status(404).json({ message: 'No tickets found for this user.' });
+//     }
+
+//     res.status(200).json({ tickets });
+//   } catch (error) {
+//     console.error('Error retrieving tickets:', error);
+//     res.status(500).json({ message: 'Failed to retrieve tickets.' });
+//   }
+// };
+
+
 exports.getTicketsByUser = async (req, res) => {
   try {
-    // console.log("Pre-Unlock");
-
     const userId = req.user?.id || "MissingUserId";
-    // console.log("User ID from middleware:", userId);
 
+    // Fetch tickets with related replies
     const tickets = await prisma.tickets.findMany({
       where: {
         OR: [
@@ -1007,15 +1035,50 @@ exports.getTicketsByUser = async (req, res) => {
           { assignedTo: { has: userId } },
         ],
       },
+      include: {
+        replies: {
+          select: {
+            id: true,
+            detail: true,
+            date: true,
+            userId: true, // Assuming replies have a `userId` field
+          },
+        },
+      },
     });
 
-    // console.log("Retrieved Tickets:", tickets);
+    // Enrich replies with user info
+    const enrichedTickets = await Promise.all(
+      tickets.map(async (ticket) => {
+        const enrichedReplies = await Promise.all(
+          ticket.replies.map(async (reply) => {
+            const user = await prisma.sec_system_user.findFirst({
+              where: { user_id: reply.userId },
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+              },
+            });
+            return {
+              ...reply,
+              user, // Include user info in the reply
+            };
+          })
+        );
 
-    if (!tickets.length) {
+        return {
+          ...ticket,
+          replies: enrichedReplies, // Replace replies with enriched replies
+        };
+      })
+    );
+
+    if (!enrichedTickets.length) {
       return res.status(404).json({ message: 'No tickets found for this user.' });
     }
 
-    res.status(200).json({ tickets });
+    res.status(200).json({ tickets: enrichedTickets });
   } catch (error) {
     console.error('Error retrieving tickets:', error);
     res.status(500).json({ message: 'Failed to retrieve tickets.' });

@@ -14,6 +14,7 @@ import { Container, Text, Grid, Button, Group, Center, Paper } from '@mantine/co
 import { IconArrowBackUp } from '@tabler/icons-react';
 import Link from 'next/link';
 import { ChangeTicketStatus } from '@/components/Dashboard/ChangeStatus';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const secretKey = 'your_secret_key'; // Use the same secret key as above
 
@@ -34,6 +35,7 @@ const StatusPage = () => {
 
   return (
     <>
+    <ProtectedRoute>
     <HeaderNavbar/>
     <Container size='sm' style={{margin:'-4% 0% 20% 25%'}}>
     <Link href='/dashboard' style={{textDecoration:'none'}}>
@@ -68,6 +70,7 @@ const StatusPage = () => {
     </Paper>
     </Container>
     <Footer/>
+    </ProtectedRoute>
     </>
   );
 };

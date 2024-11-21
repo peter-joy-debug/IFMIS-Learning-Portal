@@ -14,6 +14,7 @@ import { Container, Text, Grid, Button, Group, Center, Paper } from '@mantine/co
 import { IconArrowBackUp } from '@tabler/icons-react';
 import Link from 'next/link';
 import { ReplyUserTicket } from '@/components/Dashboard/ReplyTicket';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const secretKey = 'your_secret_key'; // Use the same secret key as above
 
@@ -34,6 +35,7 @@ const ReplyPage = () => {
 
   return (
     <>
+    <ProtectedRoute>
     <HeaderNavbar/>
     <Container size='md' style={{margin:'-7% 0% 20% 17%'}}>
     <Link href='/dashboard' style={{textDecoration:'none'}}>
@@ -69,6 +71,7 @@ const ReplyPage = () => {
     </Paper>
     </Container>
     <Footer/>
+    </ProtectedRoute>
     </>
   );
 };

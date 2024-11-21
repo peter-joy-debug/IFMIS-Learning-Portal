@@ -14,6 +14,7 @@ import { AssignUserToTicket } from '@/components/Dashboard/AssignToTicket';
 import { Container, Text, Grid, Button, Group, Center, Paper } from '@mantine/core';
 import { SharedUserToTicket } from '@/components/Dashboard/ShareToTicket';
 import { IconArrowBackUp } from '@tabler/icons-react';
+import ProtectedRoute from '../components/ProtectedRoute';
 const secretKey = 'your_secret_key'; // Use the same secret key as above
 import Link from 'next/link';
 
@@ -34,6 +35,7 @@ const SharePage = () => {
 
   return (
     <>
+    <ProtectedRoute>
     <HeaderNavbar/>
     <Container size='sm' style={{margin:'-4% 0% 20% 25%'}}>
     <Link href='/dashboard' style={{textDecoration:'none'}}>
@@ -68,6 +70,7 @@ const SharePage = () => {
     </Paper>
     </Container>
     <Footer/>
+    </ProtectedRoute>
     </>
   );
 };

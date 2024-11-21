@@ -7,13 +7,16 @@ import { Ticket } from '@/components/Ticket/Ticket';
 import { Footer } from '@/components/Footer/Footer';
 import { AllCategories } from '@/components/Categories/AllCategories';
 // import { FAQ } from '@/components/FAQ/FAQ';
+import ProtectedRoute from '../components/ProtectedRoute';
 import { MainDashboard } from '@/components/Dashboard/Main';
 export default function Dashboard() {
   return (
     <>
+    <ProtectedRoute>
       <HeaderNavbar/>
       <MainDashboard/>
       {/* <Footer/> */}
+    </ProtectedRoute>
     </>
   );
 }

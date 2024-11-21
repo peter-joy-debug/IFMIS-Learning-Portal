@@ -1,15 +1,38 @@
 import { Grid, Skeleton, Container, Tabs, Paper, rem, Group } from '@mantine/core';
 import { IconDashboard, IconArrowDownRight, IconTicket, IconUser, IconSettings2, IconQuestionMark } from '@tabler/icons-react';
+import {jwtDecode} from 'jwt-decode';
 import { Profile } from './Profile';
 import { Stats } from './Stats';
 import AllTickets from './AllTickets';
 import { FAQConfig } from './FAQConfig';
 import AllTicketsAdmin from './AllTicketAdmin';
+import { useState, useEffect } from 'react';
 const child = <Skeleton height={140} radius="md" animate={false} />;
-
+type User = {
+  first_name: string;
+  last_name: string;
+  email_address: string;
+  user_type: string;
+  user_image_id?: string | null;
+};
 
 export function MainDashboard() {
     //Escarate ticket or assign, assignee
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token); // Decode the token
+        const userData = decodedToken.user; // Extract user data
+        setUser(userData); // Set user state
+      } catch (error) {
+        console.error('Failed to decode token:', error);
+        setUser(null);
+      }
+    }
+  }, []);
+  console.log("USER: ",user?.user_type );
   return (
     <Container size="xl" style={{marginTop:'-7%', marginBottom:'1%'}}>
       <Grid>
@@ -27,9 +50,11 @@ export function MainDashboard() {
             <Tabs.Tab value="profile">
             <Group><IconUser style={{ width: rem(18), height: rem(18) }} stroke={1.5} /> Profile</Group>
             </Tabs.Tab>
+            {user?.user_type === 'INSTITUTION_ADMIN' ? 
             <Tabs.Tab value="faq">
             <Group><IconQuestionMark style={{ width: rem(18), height: rem(18) }} stroke={1.5} /> FAQ</Group>
             </Tabs.Tab>
+            : ''}
         </Tabs.List>
         </Paper>
         <Tabs.Panel value="dashboard">
@@ -37,11 +62,11 @@ export function MainDashboard() {
         </Tabs.Panel>
         <Tabs.Panel value="tickets">
             <br />
-            <AllTickets/>
-            {/* <AllTicketsAdmin/> */}
+            {user?.user_type === 'INSTITUTION_ADMIN' ? <AllTicketsAdmin /> : <AllTickets />}
         </Tabs.Panel>
         <Tabs.Panel value="profile">
-            <Profile/>
+          <br />
+            <Profile user={user}/>
         </Tabs.Panel>
         <Tabs.Panel value="faq">
            <FAQConfig/>

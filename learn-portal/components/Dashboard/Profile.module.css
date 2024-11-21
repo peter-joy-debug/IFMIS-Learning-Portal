@@ -3,5 +3,6 @@
   }
   
   .avatar {
-    border: rem(2px) solid var(--mantine-color-body);
+    border: 7px solid white;
+    background-color: lightblue;
   }

@@ -538,7 +538,7 @@ const handleRemoveUser = async (userId: string) => {
         setReplies(fetchedReplies);
       } catch (err) {
         console.error('Failed to fetch replies:', err);
-        setError('Failed to load replies');
+        setError('No Replies');
       } finally {
         setLoading(false);
       }
@@ -555,7 +555,7 @@ const handleRemoveUser = async (userId: string) => {
     }, [fetchReplies]);
   
     if (loading) return <Loader size="sm" />;
-    if (error) return <Text color="red">{error}</Text>;
+    if (error) return <Text c="dimmed">{error}</Text>;
 
     return (
       <Box>

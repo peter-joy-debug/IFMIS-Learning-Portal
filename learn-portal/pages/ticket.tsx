@@ -9,12 +9,16 @@ import { Footer } from '@/components/Footer/Footer';
 import { ContentFilter } from '@/components/ContentFilter/ContentFilter';
 import { SingleContentPage } from '@/components/SingleContentPage/SingleContentPage';
 import { TicketForm } from '@/components/Ticket/TicketForm';
+import ProtectedRoute from '../components/ProtectedRoute';
+
 export default function TicketPage() {
   return (
     <>
+    <ProtectedRoute>
       <HeaderNavbar/>
       <TicketForm/>
       <Footer/>
+    </ProtectedRoute>
     </>
   );
 }
