@@ -87,9 +87,10 @@ export function Search() {
         <Paper style={{padding:'2%'}}>
             <Title style={{fontWeight:'normal', fontSize:'20px'}} >How can we help you today ?</Title>
         </Paper>
-        <Spotlight.Search placeholder="Search anything here..." leftSection={<IconSearch stroke={1.5} />} style={{padding:'1%'}}/>
+        {/* <Spotlight.Search placeholder="Search anything here..." leftSection={<IconSearch stroke={1.5} />} style={{padding:'1%'}}/> */}
         <Spotlight.ActionsList style={{padding:'5%'}}>
-          {items.length > 0 ? items : <Spotlight.Empty>Nothing found...</Spotlight.Empty>}
+          {/* {items.length > 0 ? items : <Spotlight.Empty>Nothing found...</Spotlight.Empty>} */}
+          <Paper style={{padding:'2%'}}><p>This feature is Under Development..., It will be ready soon!!</p></Paper>
         </Spotlight.ActionsList>
       </Spotlight.Root>
     </>

@@ -11,8 +11,8 @@ export default function HomePage() {
     <>
       <HeaderNavbar/>
       <Hero/>
-      <Categories/>
-      <HomeContent/>
+      {/* <Categories/>
+      <HomeContent/> */}
       <Ticket/>
       <Footer/>
     </>

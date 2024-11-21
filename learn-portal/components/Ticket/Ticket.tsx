@@ -1,6 +1,8 @@
 import { Title, Text, Button, Container } from '@mantine/core';
 import { Dots } from './Dots';
 import classes from './Ticket.module.css';
+import Link from 'next/link';
+
 
 export function Ticket() {
   return (
@@ -27,9 +29,11 @@ export function Ticket() {
         </Container>
 
         <div className={classes.controls}>
+          <Link href='/ticket'>
           <Button className={classes.control} size="lg" variant="light">
             Create Ticket
           </Button>
+          </Link>
         </div>
         </center>
       </div>

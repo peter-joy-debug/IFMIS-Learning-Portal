@@ -1,8 +1,10 @@
 
 
 import { useState, useEffect } from 'react';
+import FAQs from '../../public/FAQ.jpg'
+import Image from 'next/image';
 import {
-  Image,
+  // Image,
   Accordion,
   Grid,
   Container,
@@ -73,8 +75,8 @@ export function FAQ() {
         <Grid id="faq-grid" gutter={50}>
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Image
-              style={{ borderTopLeftRadius: '100px', borderBottomRightRadius: '100px' }}
-              src="https://plus.unsplash.com/premium_photo-1678216285963-253d94232eb7?q=80&w=2500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              style={{ borderTopLeftRadius: '100px', borderBottomRightRadius: '100px',height:'500px', width:'100%' }}
+              src={FAQs}
               alt="Frequently Asked Questions"
             />
           </Grid.Col>
@@ -93,7 +95,7 @@ export function FAQ() {
                     <Accordion.Panel>
                       {faq.answer}
                       <Group gap={10} style={{ marginTop: '2%' }}>
-                        <Tooltip label="Like" withArrow arrowOffset={26} arrowSize={8}>
+                        {/* <Tooltip label="Like" withArrow arrowOffset={26} arrowSize={8}>
                           <ActionIcon variant="subtle" color="gray">
                             <IconThumbUp
                               style={{ width: rem(30), height: rem(30) }}
@@ -119,7 +121,7 @@ export function FAQ() {
                               stroke={1.5}
                             />
                           </ActionIcon>
-                        </Tooltip>
+                        </Tooltip> */}
                       </Group>
                     </Accordion.Panel>
                   </Accordion.Item>
