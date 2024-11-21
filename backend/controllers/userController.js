@@ -240,11 +240,12 @@ exports.register = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-    const { userId, password } = req.body;
+    const { username, password } = req.body;
+    console.log("REC: ",username);
   
     try {
       const user = await prisma.sec_system_user.findFirst({
-        where: { user_id:userId },
+        where: { user_id:username },
       });
   
       if (!user) {

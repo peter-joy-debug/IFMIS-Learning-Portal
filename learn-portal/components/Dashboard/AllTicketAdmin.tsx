@@ -69,7 +69,7 @@ export type Ticket = {
 
 
 
-const AllTickets = () => {
+const AllTicketsAdmin = () => {
   const secretKey = 'your_secret_key';
   const iconStyle = { width: rem(16), height: rem(16) };
   const { toggle, fullscreen } = useFullscreen();
@@ -210,7 +210,7 @@ const ReplyAttachmentRenderer = ({ attachments }: { attachments: string[] }) => 
         {attachmentData.map((file, index) => (
           <>
 
-          <Grid.Col span={6}>
+          <Grid.Col span={3}>
           <Paper
           withBorder
             key={file.fileId}
@@ -250,7 +250,7 @@ const ReplyAttachmentRenderer = ({ attachments }: { attachments: string[] }) => 
           </Grid.Col>
           
         </>))}
-      {error && <Text c="dimmed">{error}</Text>}
+      {error && <Text color="red">{error}</Text>}
     </Grid>
   );
 };
@@ -485,7 +485,7 @@ const handleRemoveUser = async (userId: string) => {
 
   const fetchTickets = useCallback(async () => {
     try {
-      const response = await ticketRoutes.getTicketsByUser(); // API call
+      const response = await ticketRoutes.getAllTickets(); // API call
       const newTickets = response.data.tickets;
       // Only update tickets if there are new changes
       if (JSON.stringify(newTickets) !== JSON.stringify(tickets)) {
@@ -538,7 +538,7 @@ const handleRemoveUser = async (userId: string) => {
         setReplies(fetchedReplies);
       } catch (err) {
         console.error('Failed to fetch replies:', err);
-        setError('No Reply');
+        setError('Failed to load replies');
       } finally {
         setLoading(false);
       }
@@ -555,7 +555,7 @@ const handleRemoveUser = async (userId: string) => {
     }, [fetchReplies]);
   
     if (loading) return <Loader size="sm" />;
-    if (error) return <Text color="dimmed">{error}</Text>;
+    if (error) return <Text color="red">{error}</Text>;
 
     return (
       <Box>
@@ -770,7 +770,7 @@ const handleRemoveUser = async (userId: string) => {
 
       return(
       <>
-      {/* <Link
+      <Link
           href={{
             pathname: '/assign',
             query: {
@@ -782,7 +782,7 @@ const handleRemoveUser = async (userId: string) => {
         <Menu.Item leftSection={<IconUsers />}>
           Assign
         </Menu.Item>
-        </Link> */}
+        </Link>
         <Link
           href={{
             pathname: '/shared',
@@ -809,7 +809,7 @@ const handleRemoveUser = async (userId: string) => {
           Reply
         </Menu.Item>
         </Link>
-        {/* <Link
+        <Link
           href={{
             pathname: '/status',
             query: {
@@ -821,7 +821,7 @@ const handleRemoveUser = async (userId: string) => {
         <Menu.Item leftSection={<IconSettings />}>
           Change Status
         </Menu.Item>
-        </Link> */}
+        </Link>
       </>
   )},
  
@@ -1062,4 +1062,4 @@ const handleRemoveUser = async (userId: string) => {
   );
 };
 
-export default AllTickets;
+export default AllTicketsAdmin;

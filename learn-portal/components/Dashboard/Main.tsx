@@ -1,9 +1,12 @@
 import { Grid, Skeleton, Container, Tabs, Paper, rem, Group } from '@mantine/core';
-import { IconDashboard, IconArrowDownRight, IconTicket, IconUser } from '@tabler/icons-react';
+import { IconDashboard, IconArrowDownRight, IconTicket, IconUser, IconSettings2, IconQuestionMark } from '@tabler/icons-react';
 import { Profile } from './Profile';
 import { Stats } from './Stats';
 import AllTickets from './AllTickets';
+import { FAQConfig } from './FAQConfig';
+import AllTicketsAdmin from './AllTicketAdmin';
 const child = <Skeleton height={140} radius="md" animate={false} />;
+
 
 export function MainDashboard() {
     //Escarate ticket or assign, assignee
@@ -24,6 +27,9 @@ export function MainDashboard() {
             <Tabs.Tab value="profile">
             <Group><IconUser style={{ width: rem(18), height: rem(18) }} stroke={1.5} /> Profile</Group>
             </Tabs.Tab>
+            <Tabs.Tab value="faq">
+            <Group><IconQuestionMark style={{ width: rem(18), height: rem(18) }} stroke={1.5} /> FAQ</Group>
+            </Tabs.Tab>
         </Tabs.List>
         </Paper>
         <Tabs.Panel value="dashboard">
@@ -32,9 +38,13 @@ export function MainDashboard() {
         <Tabs.Panel value="tickets">
             <br />
             <AllTickets/>
+            {/* <AllTicketsAdmin/> */}
         </Tabs.Panel>
         <Tabs.Panel value="profile">
             <Profile/>
+        </Tabs.Panel>
+        <Tabs.Panel value="faq">
+           <FAQConfig/>
         </Tabs.Panel>
         </Tabs>
         </Grid.Col>

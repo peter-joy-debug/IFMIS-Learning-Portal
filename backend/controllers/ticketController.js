@@ -9,6 +9,7 @@ const mongoose = require('mongoose'); // Add this line
 exports.createTicket = async (req, res) => {
   const { subject, detail, department } = req.body;
   const userID = req.user.id;
+console.log("GETA ID: ",userID);
 
   try {
     const userExists = await prisma.sec_system_user.findFirst({
@@ -853,6 +854,7 @@ exports.getAllTickets = async (req, res) => {
               detail: true,
               date: true,
               userId: true, // Keep userId to fetch user info later
+              attachments:true
             },
           },
         },
