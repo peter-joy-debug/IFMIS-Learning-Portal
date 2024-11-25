@@ -182,7 +182,7 @@ export function TicketForm() {
             label="Module"
             required
             placeholder="Select Modules"
-            data={['General', 'COA', 'Budget', 'Planning', 'Debtor', 'Vendor', 'Procurement']}
+            data={['General', 'COA', 'Budget', 'Planning', 'Debtor', 'Vendor', 'Procurement','Accounting', 'Asset and Inventory', 'Payroll', 'Staff Establishment']}
             {...form.getInputProps('module')}
           />
           <br />
