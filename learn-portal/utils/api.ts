@@ -1,9 +1,11 @@
 
 
 import axios from 'axios';
+import { env } from 'process';
+
 
 const api = axios.create({
-  baseURL: 'http://localhost:3100/api', // Adjust this to your backend URL
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL, // Adjust this to your backend URL
   headers: {
     'Content-Type': 'application/json',
   },

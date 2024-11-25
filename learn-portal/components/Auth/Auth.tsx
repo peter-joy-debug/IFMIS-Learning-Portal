@@ -503,6 +503,7 @@ export function Authentication(props: PaperProps) {
       setError(err.response?.data?.message || 'Failed to login');
     }
   };
+console.log("PROCESS .ENV: ",process.env.NEXT_PUBLIC_BASE_URL);
 
   return (
     <Container size="xs" style={{ marginTop: '-5%', marginBottom: '15%' }}>

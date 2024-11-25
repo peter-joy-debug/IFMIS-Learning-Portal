@@ -6,7 +6,7 @@ info:
   description: Comprehensive API documentation for the User Ticket System | Prepared By Honore Peter Joy NDAYISHIMIYE
 
 servers:
-  - url: http://localhost:3100
+  - url: http://172.18.1.206:3100/
     description: Local server
 
 paths:
